@@ -17,9 +17,15 @@ export class UIController {
   public init(): void {
     this.appContainer.innerHTML = `
       <div class="game-wrapper">
+        <nav class="top-nav">
+          <button id="btn-save" class="btn-micro">Save ***</button>
+          <button id="btn-load" class="btn-micro">Load ***</button>
+          <button id="btn-new" class="btn-micro">New Game</button>
+        </nav>
+
         <header class="game-header">
           <div class="stats-group">
-            <div class="stat-item">LEVEL <span id="level-val">1</span></div>
+            <div class="stat-item">LIVES <span id="lives-val">♥♥♥</span></div>
             <div class="stat-item">TIME <span id="timer-val">0s</span></div>
           </div>
           <div class="score-display">
@@ -58,6 +64,17 @@ export class UIController {
     const resetBtn = document.getElementById('btn-reset');
     resetBtn?.addEventListener('click', () => {
       if (this.onAction) this.onAction('RESET_PATH');
+    });
+
+    // NOWE: Nasłuchiwanie na przyciski z górnego menu
+    document.getElementById('btn-save')?.addEventListener('click', () => {
+      if (this.onAction) this.onAction('TACTICAL_SAVE');
+    });
+    document.getElementById('btn-load')?.addEventListener('click', () => {
+      if (this.onAction) this.onAction('TACTICAL_LOAD');
+    });
+    document.getElementById('btn-new')?.addEventListener('click', () => {
+      if (this.onAction) this.onAction('NEW_GAME');
     });
 
     const board = document.getElementById('game-board');
@@ -102,18 +119,36 @@ export class UIController {
     const bestEl = document.getElementById('best-val');
     if (bestEl) bestEl.textContent = state.bestScore.toString();
     
-    const levelEl = document.getElementById('level-val');
-    if (levelEl) levelEl.textContent = state.level.toString();
+    // AKTUALIZACJA WIZUALNA ŻYĆ (np. ♥♥♥)
+    const livesEl = document.getElementById('lives-val');
+    if (livesEl) {
+      livesEl.textContent = state.status === 'GAME_OVER' ? '☠️' : '♥'.repeat(state.lives);
+    }
 
     const timerEl = document.getElementById('timer-val');
     if (timerEl) timerEl.textContent = `${state.time}s`;
+
+    // AKTUALIZACJA GÓRNEGO MENU (Gwiazdki i blokady)
+    const saveBtn = document.getElementById('btn-save') as HTMLButtonElement;
+    const loadBtn = document.getElementById('btn-load') as HTMLButtonElement;
+    
+    if (saveBtn) {
+      const stars = '★'.repeat(state.savesLeft) + '☆'.repeat(3 - state.savesLeft);
+      saveBtn.textContent = `Save ${stars}`;
+      saveBtn.disabled = state.status !== 'PLAYING' || state.savesLeft <= 0;
+    }
+
+    if (loadBtn) {
+      const stars = '★'.repeat(state.loadsLeft) + '☆'.repeat(3 - state.loadsLeft);
+      loadBtn.textContent = `Load ${stars}`;
+      loadBtn.disabled = state.status !== 'PLAYING' || !state.savedSnapshot || state.loadsLeft <= 0;
+    }
 
     const boardElement = document.getElementById('game-board');
     if (!boardElement) return;
     
     const cols = Math.sqrt(state.puzzle.length);
     
-    // 1. Budowanie fizycznych div-ów TYLKO gdy zmienia się rozmiar planszy (np. z 4x4 na 5x5)
     if (boardElement.children.length !== state.puzzle.length) {
       boardElement.innerHTML = '';
       boardElement.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
@@ -126,22 +161,26 @@ export class UIController {
       }
     }
 
-    // 2. AKTUALIZACJA TREŚCI I KLAS (To naprawia Twój błąd!)
+    // 2. AKTUALIZACJA TREŚCI I KLAS
     const cells = boardElement.children;
     state.puzzle.forEach((cellValue, index) => {
       const cell = cells[index] as HTMLElement;
       
       // Czyścimy wszystko co stare
       cell.textContent = '';
-      cell.classList.remove('checkpoint', 'active', 'current');
+      cell.classList.remove('checkpoint', 'active', 'current', 'hole');
 
-      // Wpisujemy nową cyfrę, jeśli istnieje w tym miejscu w nowym levelu
+      // Obsługa dziur (Błąd #2 i wymaganie level 30+)
+      if (cellValue === -1) {
+        cell.classList.add('hole');
+        return; // Nie renderujemy nic więcej dla dziury
+      }
+
       if (cellValue > 0) {
         cell.textContent = cellValue.toString();
         cell.classList.add('checkpoint');
       }
       
-      // Odświeżamy stan ścieżki
       const pathIndex = state.path.indexOf(index);
       if (pathIndex !== -1) {
         cell.classList.add('active');
@@ -157,7 +196,6 @@ export class UIController {
       boardElement.classList.remove('win');
     }
 
-    // 3. Rysowanie węża (bez zmian)
     const svg = document.getElementById('path-overlay');
     if (svg) {
       svg.innerHTML = ''; 
@@ -182,13 +220,15 @@ export class UIController {
       }
     }
 
-    // Przyciski (bez zmian)
     const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
     const resetBtn = document.getElementById('btn-reset') as HTMLButtonElement;
     
     if (startBtn) {
       if (state.status === 'WIN') {
         startBtn.textContent = 'Next Level';
+        startBtn.disabled = false;
+      } else if (state.status === 'GAME_OVER') {
+        startBtn.textContent = 'Try Again';
         startBtn.disabled = false;
       } else {
         startBtn.textContent = state.status === 'PLAYING' ? `Level ${state.level}` : 'Start Game';

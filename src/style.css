@@ -35,6 +35,39 @@ body {
   box-sizing: border-box;
 }
 
+/* --- GÓRNE MENU TAKTYCZNE --- */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cell-checkpoint);
+}
+
+.btn-micro {
+  flex: 1;
+  padding: 8px 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: var(--cell-empty);
+  color: var(--text-muted);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-micro:hover:not(:disabled) {
+  background-color: var(--cell-checkpoint);
+  color: var(--text-main);
+}
+
+.btn-micro:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 /* --- KONTENERY UI --- */
 .game-wrapper {
   background: var(--bg-color);
@@ -192,4 +225,17 @@ body {
 
 .game-controls button:active:not(:disabled) {
   transform: scale(0.96);
+}
+
+.grid-cell.hole {
+  background-color: transparent;
+  box-shadow: none;
+  cursor: default;
+  pointer-events: none; /* Gracz nie może wejść na dziurę */
+  opacity: 0.1; /* Subtelny zarys pustego pola */
+}
+
+/* Zabezpieczenie przed błędem warstwy SVG na dziurach */
+.path-svg {
+  mix-blend-mode: normal; /* Poprawka czytelności na białym tle */
 }

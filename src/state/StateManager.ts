@@ -16,7 +16,12 @@ private getDefaultState(): GameState {
       status: 'IDLE',
       puzzle: [],
       path: [],
-      time: 0
+      time: 0,
+      // Inicjalizacja zasobów taktycznych
+      lives: 3,
+      savesLeft: 3,
+      loadsLeft: 3,
+      savedSnapshot: null
     };
   }
 
@@ -60,7 +65,15 @@ private getDefaultState(): GameState {
   }
   
 public resetCurrentGame(): void {
-    // Dodano czyszczenie tablicy path!
-    this.updateState({ score: 0, status: 'IDLE', path: [] });
+    // Twardy reset całej sesji (np. po Game Over lub kliknięciu New Game)
+    this.updateState({ 
+      score: 0, 
+      status: 'IDLE', 
+      path: [],
+      lives: 3,
+      savesLeft: 3,
+      loadsLeft: 3,
+      savedSnapshot: null
+    });
   }
 }

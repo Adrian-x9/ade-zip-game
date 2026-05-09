@@ -20,15 +20,64 @@ export class GameEngine {
   private handleUIAction(action: string): void {
     const currentState = this.stateManager.getState();
 
+    if (action === 'NEW_GAME') {
+      if (this.timerInterval) clearInterval(this.timerInterval);
+      this.stateManager.resetCurrentGame();
+      this.startGame();
+      return;
+    }
+
     if (action === 'START_GAME') {
       this.startGame();
       return;
     }
 
+    // --- ZAPIS TAKTYCZNY (SAVE ***) ---
+    if (action === 'TACTICAL_SAVE' && currentState.status === 'PLAYING' && currentState.savesLeft > 0) {
+      const snapshot = JSON.stringify({ 
+        path: [...currentState.path], 
+        time: currentState.time 
+      });
+      
+      this.stateManager.updateState({ 
+        savedSnapshot: snapshot, 
+        savesLeft: currentState.savesLeft - 1 
+      });
+      
+      this.uiController.render(this.stateManager.getState());
+      return;
+    }
+
+    // --- ODCZYT TAKTYCZNY (LOAD ***) ---
+    if (action === 'TACTICAL_LOAD' && currentState.status === 'PLAYING' && currentState.loadsLeft > 0 && currentState.savedSnapshot) {
+      try {
+        const parsed = JSON.parse(currentState.savedSnapshot);
+        
+        this.stateManager.updateState({ 
+          path: parsed.path, 
+          time: parsed.time,
+          loadsLeft: currentState.loadsLeft - 1 
+        });
+        
+        this.uiController.render(this.stateManager.getState());
+      } catch (e) {
+        console.error("Tactical Load Error:", e);
+      }
+      return;
+    }
+
+    // --- SURVIVAL: RESET ZABIERA ŻYCIE ---
     if (action === 'RESET_PATH' && currentState.status === 'PLAYING') {
-      const penaltyScore = Math.max(0, currentState.score - 15);
-      this.stateManager.updateState({ path: [], score: penaltyScore, time: 0 });
-      this.startTimer();
+      const remainingLives = currentState.lives - 1;
+      
+      if (remainingLives <= 0) {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.stateManager.updateState({ status: 'GAME_OVER', lives: 0 });
+      } else {
+        this.stateManager.updateState({ path: [], lives: remainingLives, time: 0 });
+        this.startTimer();
+      }
+      
       this.uiController.render(this.stateManager.getState());
       return;
     }
@@ -76,6 +125,8 @@ export class GameEngine {
     const state = this.stateManager.getState();
     const { puzzle, path } = state;
 
+    if (puzzle[cellId] === -1) return; // Ignorujemy wejście na dziurę
+
     if (path.length === 0) {
       if (puzzle[cellId] === 1) {
         this.stateManager.updateState({ path: [cellId] });
@@ -93,22 +144,29 @@ export class GameEngine {
     const maxTarget = Math.max(...puzzle);
     const expectedNext = this.getNextExpectedNumber(puzzle, path);
 
-    if (puzzle[cellId] === maxTarget && path.length + 1 !== puzzle.length) return; 
+    // Walidacja końca ścieżki na podstawie liczby aktywnych (grywalnych) pól
+    if (puzzle[cellId] === maxTarget) {
+      const playableCells = puzzle.filter(v => v !== -1).length;
+      if (path.length + 1 !== playableCells) return; 
+    }
+    
     if (puzzle[cellId] > 0 && puzzle[cellId] !== maxTarget && puzzle[cellId] !== expectedNext) return;
 
     const newPath = [...path, cellId];
     this.stateManager.updateState({ path: newPath });
 
-    if (newPath.length === puzzle.length) {
-      const state = this.stateManager.getState();
-      const timeBonus = Math.max(0, 100 - state.time); 
-      const roundScore = 100 + (state.level * 10) + timeBonus;
-
+    // Warunek wygranej uwzględniający wycięte pola (dziury)
+    const totalPlayable = puzzle.filter(v => v !== -1).length;
+    if (newPath.length === totalPlayable) {
+      const stateUpdate = this.stateManager.getState();
+      const timeBonus = Math.max(0, 100 - stateUpdate.time); 
+      
       this.stateManager.updateState({ 
         status: 'WIN',
-        score: state.score + roundScore,
-        level: state.level + 1
+        score: stateUpdate.score + 100 + (stateUpdate.level * 10) + timeBonus,
+        level: stateUpdate.level + 1
       });
+      
       if (this.timerInterval) clearInterval(this.timerInterval);
     }
 
@@ -132,19 +190,33 @@ export class GameEngine {
   }
 
   private generateLevel(level: number): number[] {
-    const cols = level <= 5 ? 4 : 5; 
+    // Skalowanie: 4x4 (poziomy 1-5), 5x5 (poziomy 6-11), 6x6 (od poziomu 12)
+    const cols = level <= 5 ? 4 : (level <= 11 ? 5 : 6); 
     const total = cols * cols;
-    const checkpointsCount = Math.min(3 + Math.floor(level / 2), cols === 4 ? 6 : 8); 
+    const checkpointsCount = Math.min(3 + Math.floor(level / 2), cols === 6 ? 10 : 8); 
 
     const path = this.generateHamiltonianPath(cols);
     const grid = Array(total).fill(0);
     
-    grid[path[0]] = 1; 
-    grid[path[total - 1]] = checkpointsCount; 
+    let startIndex = 0;
+    let endIndex = total - 1;
+    let playablePath = path;
+
+    // Dziury: Od poziomu 30 odcinamy początek i koniec wygenerowanej ścieżki Hamiltona
+    if (level >= 30) {
+      grid[path[0]] = -1;
+      grid[path[total - 1]] = -1;
+      playablePath = path.slice(1, total - 1);
+      startIndex = 0;
+      endIndex = playablePath.length - 1;
+    }
+
+    grid[playablePath[startIndex]] = 1; 
+    grid[playablePath[endIndex]] = checkpointsCount; 
     
-    const step = Math.floor(total / (checkpointsCount - 1));
+    const step = Math.floor(playablePath.length / (checkpointsCount - 1));
     for (let i = 2; i < checkpointsCount; i++) {
-      grid[path[(i - 1) * step]] = i;
+      grid[playablePath[(i - 1) * step]] = i;
     }
     
     return grid;
@@ -154,7 +226,6 @@ export class GameEngine {
     const total = cols * cols;
     let finalPath: number[] = [];
     
-    // Funkcja licząca wolnych sąsiadów dla Heurystyki Warnsdorffa
     const countUnvisitedNeighbors = (node: number, visited: Set<number>): number => {
       let count = 0;
       for (const n of this.getNeighbors(node, cols)) {
@@ -169,7 +240,6 @@ export class GameEngine {
         return true;
       }
       
-      // Heurystyka Warnsdorffa - wymusza idzenie najpierw do krawędzi (zero lagów!)
       const neighbors = this.getNeighbors(curr, cols)
         .filter(n => !visited.has(n))
         .map(n => ({ id: n, weight: countUnvisitedNeighbors(n, visited) }))
@@ -189,7 +259,7 @@ export class GameEngine {
     };
 
     let startNode = Math.floor(Math.random() * total);
-    // ZABEZPIECZENIE: Na gridzie 5x5 wąż MUSI zacząć z czarnego pola szachownicy, inaczej zwiesi grę
+    
     if (total % 2 !== 0) { 
       while (true) {
         const r = Math.floor(startNode / cols);
