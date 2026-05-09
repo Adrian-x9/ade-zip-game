@@ -3,7 +3,6 @@ import { GameState } from '../types';
 export class UIController {
   private appContainer: HTMLElement;
   private scoreElement: HTMLElement | null = null;
-  // Event Emitter w postaci prostych callbacków dla Engine'u
   public onAction: ((actionId: string) => void) | null = null;
 
   constructor(containerId: string) {
@@ -13,7 +12,6 @@ export class UIController {
   }
 
   public init(): void {
-    // Budowanie szkieletu DOM w JS (lub nasłuchiwanie na istniejący HTML z index.html)
     this.appContainer.innerHTML = `
       <header class="game-header">
         <h1>ZIP</h1>
@@ -35,7 +33,6 @@ export class UIController {
       if (this.onAction) this.onAction('START_GAME');
     });
 
-    // Delegacja zdarzeń dla planszy (przykład)
     const board = document.getElementById('game-board');
     board?.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
@@ -52,28 +49,50 @@ export class UIController {
     
     const boardElement = document.getElementById('game-board');
     if (boardElement) {
-      // Czyszczenie i ponowne renderowanie planszy (optymalizacja możliwa później, np. DocumentFragment)
       boardElement.innerHTML = '';
       
-      state.board.forEach((cellValue, index) => {
+      // Dodajemy klasę CSS dla efektu wygranej
+      if (state.status === 'WIN') {
+        boardElement.classList.add('win');
+      } else {
+        boardElement.classList.remove('win');
+      }
+      
+      state.puzzle.forEach((cellValue, index) => {
         const cell = document.createElement('div');
         cell.className = 'grid-cell';
-        cell.dataset.id = index.toString(); // ID potrzebne dla Engine'u
+        cell.dataset.id = index.toString();
         
-        // Jeśli wartość kafelka > 0, uznajemy go za "aktywny" (np. podświetlony)
+        // 1. Renderowanie punktów kontrolnych (liczb)
         if (cellValue > 0) {
-          cell.classList.add('active');
-          cell.textContent = cellValue.toString(); // Możesz to usunąć, jeśli kafelek ma być tylko kolorem
+          cell.textContent = cellValue.toString();
+          cell.classList.add('checkpoint');
+        }
+        
+        // 2. Renderowanie ścieżki
+        const pathIndex = state.path.indexOf(index);
+        if (pathIndex !== -1) {
+          cell.classList.add('active'); // Odwiedzone
+          
+          // Podświetlenie aktualnej pozycji (głowa węża)
+          if (pathIndex === state.path.length - 1) {
+            cell.classList.add('current');
+          }
         }
         
         boardElement.appendChild(cell);
       });
     }
 
-    // Blokada/odblokowanie przycisku Start
     const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
     if (startBtn) {
-      startBtn.disabled = state.status === 'PLAYING';
+      if (state.status === 'WIN') {
+        startBtn.textContent = 'Play Again';
+        startBtn.disabled = false;
+      } else {
+        startBtn.textContent = 'Start';
+        startBtn.disabled = state.status === 'PLAYING';
+      }
     }
   }
 }

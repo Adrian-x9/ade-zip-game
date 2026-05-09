@@ -75,3 +75,31 @@ body {
 .grid-cell:active {
   transform: scale(0.95);
 }
+
+.grid-cell.checkpoint {
+  background-color: #dee2e6; /* Lekko ciemniejszy dla widoczności liczb przed wejściem */
+  color: var(--text-color);
+}
+
+.grid-cell.active {
+  background-color: var(--cell-active);
+  color: var(--bg-color);
+}
+
+.grid-cell.current {
+  /* Wyróżnienie kafelka, na którym aktualnie stoimy */
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.4);
+  transform: scale(0.95);
+}
+
+/* Animacja i kolory w momencie wygranej */
+@keyframes winPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.game-grid.win .grid-cell.active {
+  background-color: #198754; /* Zmiana na zielony kolor sukcesu */
+  animation: winPulse 0.4s ease-in-out;
+}

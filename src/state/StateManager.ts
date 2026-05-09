@@ -14,10 +14,17 @@ private getDefaultState(): GameState {
       bestScore: 0,
       level: 1,
       status: 'IDLE',
-      board: Array(16).fill(0) // Tworzy tablicę [0,0,0...,0]
+      // Prosty level: start w lewym górnym (1), koniec w prawym dolnym (4)
+      puzzle: [
+        1, 0, 0, 0,
+        0, 0, 2, 0,
+        0, 0, 0, 0,
+        3, 0, 0, 4
+      ],
+      path: [] // Ścieżka jest na starcie pusta
     };
   }
-  
+
   public getState(): Readonly<GameState> {
     return this.state;
   }
