@@ -4,6 +4,7 @@ import { UIController } from '../ui/UIController';
 export class GameEngine {
   private stateManager: StateManager;
   private uiController: UIController;
+  private timerInterval: number | null = null;
 
   constructor(stateManager: StateManager, uiController: UIController) {
     this.stateManager = stateManager;
@@ -25,9 +26,9 @@ export class GameEngine {
     }
 
     if (action === 'RESET_PATH' && currentState.status === 'PLAYING') {
-      // KARA PUNKTOWA ZA RESET (Błąd #4)
       const penaltyScore = Math.max(0, currentState.score - 15);
-      this.stateManager.updateState({ path: [], score: penaltyScore });
+      this.stateManager.updateState({ path: [], score: penaltyScore, time: 0 });
+      this.startTimer();
       this.uiController.render(this.stateManager.getState());
       return;
     }
@@ -38,12 +39,24 @@ export class GameEngine {
     }
   }
 
+  private startTimer(): void {
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    this.timerInterval = setInterval(() => {
+      const state = this.stateManager.getState();
+      if (state.status === 'PLAYING') {
+        this.stateManager.updateState({ time: state.time + 1 });
+        this.uiController.updateTimer(state.time); 
+      } else {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+      }
+    }, 1000) as unknown as number;
+  }
+
   private startGame(): void {
     const state = this.stateManager.getState();
     const isNewGame = state.status === 'IDLE' || state.status === 'GAME_OVER';
     const currentLevel = isNewGame ? 1 : state.level;
     
-    // Wariant A: Zamiast tablicy wywołujemy Generator!
     const puzzle = this.generateLevel(currentLevel);
     
     this.stateManager.updateState({ 
@@ -51,10 +64,12 @@ export class GameEngine {
       path: [],
       puzzle: puzzle,
       score: isNewGame ? 0 : state.score,
-      level: currentLevel
+      level: currentLevel,
+      time: 0 
     });
     
     this.uiController.render(this.stateManager.getState());
+    this.startTimer(); 
   }
 
   private processMove(cellId: number): void {
@@ -69,40 +84,36 @@ export class GameEngine {
       return;
     }
 
-    if (path.includes(cellId)) return; // Backtracking obsłużymy ew. kiedy indziej
+    if (path.includes(cellId)) return; 
 
     const lastCell = path[path.length - 1];
     const cols = Math.sqrt(puzzle.length);
     if (!this.isAdjacent(lastCell, cellId, cols)) return;
 
-    // WALIDACJA (Rozwiązanie błędu #1)
     const maxTarget = Math.max(...puzzle);
     const expectedNext = this.getNextExpectedNumber(puzzle, path);
 
-    // Zablokowanie wejścia na cyfrę końcową, jeśli nie przeszliśmy przez CAŁĄ planszę
-    if (puzzle[cellId] === maxTarget && path.length + 1 !== puzzle.length) {
-      return; 
-    }
-
-    if (puzzle[cellId] > 0 && puzzle[cellId] !== maxTarget && puzzle[cellId] !== expectedNext) {
-      return;
-    }
+    if (puzzle[cellId] === maxTarget && path.length + 1 !== puzzle.length) return; 
+    if (puzzle[cellId] > 0 && puzzle[cellId] !== maxTarget && puzzle[cellId] !== expectedNext) return;
 
     const newPath = [...path, cellId];
     this.stateManager.updateState({ path: newPath });
 
     if (newPath.length === puzzle.length) {
+      const state = this.stateManager.getState();
+      const timeBonus = Math.max(0, 100 - state.time); 
+      const roundScore = 100 + (state.level * 10) + timeBonus;
+
       this.stateManager.updateState({ 
         status: 'WIN',
-        score: state.score + 100 + (state.level * 10), // Skalowanie nagrody
+        score: state.score + roundScore,
         level: state.level + 1
       });
+      if (this.timerInterval) clearInterval(this.timerInterval);
     }
 
     this.uiController.render(this.stateManager.getState());
   }
-
-  // --- Algorytmy Pomocnicze i GENERATOR POZIOMÓW ---
 
   private isAdjacent(index1: number, index2: number, cols: number): boolean {
     const row1 = Math.floor(index1 / cols);
@@ -120,21 +131,17 @@ export class GameEngine {
     return currentMax + 1;
   }
 
-  // Wariant A: Proceduralne Generowanie (Błąd #2 i #7)
   private generateLevel(level: number): number[] {
-    const cols = level <= 5 ? 4 : 5; // Do 5 levelu gramy 4x4, od 6 levelu gramy 5x5
+    const cols = level <= 5 ? 4 : 5; 
     const total = cols * cols;
-    // Maksymalnie 6 punktów kontrolnych dla 4x4, 8 dla 5x5
     const checkpointsCount = Math.min(3 + Math.floor(level / 2), cols === 4 ? 6 : 8); 
 
     const path = this.generateHamiltonianPath(cols);
     const grid = Array(total).fill(0);
     
-    // 1 i Max na krańcach wygenerowanej ścieżki
     grid[path[0]] = 1; 
     grid[path[total - 1]] = checkpointsCount; 
     
-    // Rozsiewanie wartości pośrednich (np. 2, 3, 4) na osi czasu ścieżki
     const step = Math.floor(total / (checkpointsCount - 1));
     for (let i = 2; i < checkpointsCount; i++) {
       grid[path[(i - 1) * step]] = i;
@@ -143,33 +150,55 @@ export class GameEngine {
     return grid;
   }
 
-  // Klasyczny Depth-First Search z Backtrackingiem
   private generateHamiltonianPath(cols: number): number[] {
     const total = cols * cols;
     let finalPath: number[] = [];
     
+    // Funkcja licząca wolnych sąsiadów dla Heurystyki Warnsdorffa
+    const countUnvisitedNeighbors = (node: number, visited: Set<number>): number => {
+      let count = 0;
+      for (const n of this.getNeighbors(node, cols)) {
+        if (!visited.has(n)) count++;
+      }
+      return count;
+    };
+
     const dfs = (curr: number, currentPath: number[], visited: Set<number>): boolean => {
       if (currentPath.length === total) {
         finalPath = [...currentPath];
         return true;
       }
       
-      // Mieszanie kierunków dla losowości poziomów
-      const neighbors = this.getNeighbors(curr, cols).sort(() => Math.random() - 0.5);
+      // Heurystyka Warnsdorffa - wymusza idzenie najpierw do krawędzi (zero lagów!)
+      const neighbors = this.getNeighbors(curr, cols)
+        .filter(n => !visited.has(n))
+        .map(n => ({ id: n, weight: countUnvisitedNeighbors(n, visited) }))
+        .sort((a, b) => {
+          if (a.weight === b.weight) return Math.random() - 0.5;
+          return a.weight - b.weight;
+        });
       
-      for (const n of neighbors) {
-        if (!visited.has(n)) {
-          visited.add(n);
-          currentPath.push(n);
-          if (dfs(n, currentPath, visited)) return true;
-          currentPath.pop(); // Backtrack
-          visited.delete(n);
-        }
+      for (const neighbor of neighbors) {
+        visited.add(neighbor.id);
+        currentPath.push(neighbor.id);
+        if (dfs(neighbor.id, currentPath, visited)) return true;
+        currentPath.pop(); 
+        visited.delete(neighbor.id);
       }
       return false;
     };
 
-    const startNode = Math.floor(Math.random() * total);
+    let startNode = Math.floor(Math.random() * total);
+    // ZABEZPIECZENIE: Na gridzie 5x5 wąż MUSI zacząć z czarnego pola szachownicy, inaczej zwiesi grę
+    if (total % 2 !== 0) { 
+      while (true) {
+        const r = Math.floor(startNode / cols);
+        const c = startNode % cols;
+        if ((r + c) % 2 === 0) break; 
+        startNode = Math.floor(Math.random() * total);
+      }
+    }
+
     dfs(startNode, [startNode], new Set([startNode]));
     return finalPath;
   }
@@ -178,10 +207,10 @@ export class GameEngine {
     const r = Math.floor(index / cols);
     const c = index % cols;
     const n = [];
-    if (r > 0) n.push(index - cols); // Góra
-    if (r < cols - 1) n.push(index + cols); // Dół
-    if (c > 0) n.push(index - 1); // Lewo
-    if (c < cols - 1) n.push(index + 1); // Prawo
+    if (r > 0) n.push(index - cols); 
+    if (r < cols - 1) n.push(index + cols); 
+    if (c > 0) n.push(index - 1); 
+    if (c < cols - 1) n.push(index + 1); 
     return n;
   }
 }

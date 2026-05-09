@@ -16,19 +16,37 @@ export class UIController {
 
   public init(): void {
     this.appContainer.innerHTML = `
-      <header class="game-header">
-        <h1>ZIP</h1>
-        <div class="score-board">Score: <span id="score-val">0</span></div>
-      </header>
-      <main id="game-board" class="game-grid"></main>
-      <footer class="game-controls">
-        <button id="btn-start">Start</button>
-        <button id="btn-reset" disabled>Reset</button>
-      </footer>
+      <div class="game-wrapper">
+        <header class="game-header">
+          <div class="stats-group">
+            <div class="stat-item">LEVEL <span id="level-val">1</span></div>
+            <div class="stat-item">TIME <span id="timer-val">0s</span></div>
+          </div>
+          <div class="score-display">
+            <div id="score-val">0</div>
+            <small>BEST: <span id="best-val">0</span></small>
+          </div>
+        </header>
+        
+        <div class="board-container">
+          <div id="game-board" class="game-grid"></div>
+          <svg id="path-overlay" class="path-svg"></svg>
+        </div>
+
+        <footer class="game-controls">
+          <button id="btn-start" class="btn-primary">Start Game</button>
+          <button id="btn-reset" class="btn-outline" disabled>Reset</button>
+        </footer>
+      </div>
     `;
 
     this.scoreElement = document.getElementById('score-val');
     this.bindEvents();
+  }
+
+  public updateTimer(time: number): void {
+    const timerEl = document.getElementById('timer-val');
+    if (timerEl) timerEl.textContent = `${time}s`;
   }
 
   private bindEvents(): void {
@@ -79,66 +97,92 @@ export class UIController {
   }
 
   public render(state: Readonly<GameState>): void {
-    if (this.scoreElement) {
-      this.scoreElement.textContent = state.score.toString();
-    }
+    if (this.scoreElement) this.scoreElement.textContent = state.score.toString();
     
+    const bestEl = document.getElementById('best-val');
+    if (bestEl) bestEl.textContent = state.bestScore.toString();
+    
+    const levelEl = document.getElementById('level-val');
+    if (levelEl) levelEl.textContent = state.level.toString();
+
+    const timerEl = document.getElementById('timer-val');
+    if (timerEl) timerEl.textContent = `${state.time}s`;
+
     const boardElement = document.getElementById('game-board');
     if (!boardElement) return;
     
-    boardElement.innerHTML = '';
-    
     const cols = Math.sqrt(state.puzzle.length);
-    boardElement.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     
+    // 1. Budowanie fizycznych div-ów TYLKO gdy zmienia się rozmiar planszy (np. z 4x4 na 5x5)
+    if (boardElement.children.length !== state.puzzle.length) {
+      boardElement.innerHTML = '';
+      boardElement.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      
+      for (let i = 0; i < state.puzzle.length; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell';
+        cell.dataset.id = i.toString();
+        boardElement.appendChild(cell);
+      }
+    }
+
+    // 2. AKTUALIZACJA TREŚCI I KLAS (To naprawia Twój błąd!)
+    const cells = boardElement.children;
+    state.puzzle.forEach((cellValue, index) => {
+      const cell = cells[index] as HTMLElement;
+      
+      // Czyścimy wszystko co stare
+      cell.textContent = '';
+      cell.classList.remove('checkpoint', 'active', 'current');
+
+      // Wpisujemy nową cyfrę, jeśli istnieje w tym miejscu w nowym levelu
+      if (cellValue > 0) {
+        cell.textContent = cellValue.toString();
+        cell.classList.add('checkpoint');
+      }
+      
+      // Odświeżamy stan ścieżki
+      const pathIndex = state.path.indexOf(index);
+      if (pathIndex !== -1) {
+        cell.classList.add('active');
+        if (pathIndex === state.path.length - 1) {
+          cell.classList.add('current');
+        }
+      }
+    });
+
     if (state.status === 'WIN') {
       boardElement.classList.add('win');
     } else {
       boardElement.classList.remove('win');
     }
 
-    // RYSOWANIE WĘŻYKA SVG
-    const svgNS = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('class', 'path-svg');
-    svg.setAttribute('viewBox', `0 0 ${cols * 100} ${cols * 100}`); 
+    // 3. Rysowanie węża (bez zmian)
+    const svg = document.getElementById('path-overlay');
+    if (svg) {
+      svg.innerHTML = ''; 
+      svg.setAttribute('viewBox', `0 0 ${cols * 100} ${cols * 100}`); 
+      
+      if (state.status === 'WIN') svg.classList.add('win');
+      else svg.classList.remove('win');
 
-    if (state.path.length > 0) {
-      const pathLine = document.createElementNS(svgNS, 'path');
-      pathLine.setAttribute('class', 'path-line');
+      if (state.path.length > 0) {
+        const svgNS = "http://www.w3.org/2000/svg";
+        const pathLine = document.createElementNS(svgNS, 'path');
+        pathLine.setAttribute('class', 'path-line');
       
-      const d = state.path.map((id, index) => {
-        const cx = (id % cols) * 100 + 50; 
-        const cy = Math.floor(id / cols) * 100 + 50;
-        return `${index === 0 ? 'M' : 'L'} ${cx} ${cy}`;
-      }).join(' ');
+        const d = state.path.map((id, index) => {
+          const cx = (id % cols) * 100 + 50; 
+          const cy = Math.floor(id / cols) * 100 + 50;
+          return `${index === 0 ? 'M' : 'L'} ${cx} ${cy}`;
+        }).join(' ');
       
-      pathLine.setAttribute('d', d);
-      svg.appendChild(pathLine);
+        pathLine.setAttribute('d', d);
+        svg.appendChild(pathLine);
+      }
     }
-    boardElement.appendChild(svg);
 
-    // RENDEROWANIE KAFELKÓW
-    state.puzzle.forEach((cellValue, index) => {
-      const cell = document.createElement('div');
-      cell.className = 'grid-cell';
-      cell.dataset.id = index.toString();
-      
-      if (cellValue > 0) {
-        cell.textContent = cellValue.toString();
-        cell.classList.add('checkpoint');
-      }
-      
-      const pathIndex = state.path.indexOf(index);
-      if (pathIndex !== -1) {
-        cell.classList.add('active');
-        if (pathIndex === state.path.length - 1) cell.classList.add('current');
-      }
-      
-      boardElement.appendChild(cell);
-    });
-
-    // LOGIKA PRZYCISKÓW (Właściwa lokalizacja)
+    // Przyciski (bez zmian)
     const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
     const resetBtn = document.getElementById('btn-reset') as HTMLButtonElement;
     
@@ -147,7 +191,7 @@ export class UIController {
         startBtn.textContent = 'Next Level';
         startBtn.disabled = false;
       } else {
-        startBtn.textContent = state.status === 'PLAYING' ? `Level ${state.level}` : 'Start';
+        startBtn.textContent = state.status === 'PLAYING' ? `Level ${state.level}` : 'Start Game';
         startBtn.disabled = state.status === 'PLAYING';
       }
     }

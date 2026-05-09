@@ -14,14 +14,9 @@ private getDefaultState(): GameState {
       bestScore: 0,
       level: 1,
       status: 'IDLE',
-      // Prosty level: start w lewym górnym (1), koniec w prawym dolnym (4)
-      puzzle: [
-        1, 0, 0, 0,
-        0, 0, 2, 0,
-        0, 0, 0, 0,
-        3, 0, 0, 4
-      ],
-      path: [] // Ścieżka jest na starcie pusta
+      puzzle: [],
+      path: [],
+      time: 0
     };
   }
 
