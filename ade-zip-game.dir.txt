@@ -1,0 +1,782 @@
+ Volume in drive C has no label.
+ Volume Serial Number is 64E4-665E
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game
+
+09.05.2026  14:43    <DIR>          .
+07.05.2026  19:07    <DIR>          ..
+09.05.2026  14:43                 0 ade-zip-game.dir.txt
+07.05.2026  18:58    <DIR>          node_modules
+07.05.2026  18:58    <DIR>          public
+07.05.2026  19:02    <DIR>          src
+09.05.2026  14:43               815 vite.config.ts
+               2 File(s)            815 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git
+
+09.05.2026  14:43    <DIR>          ..
+07.05.2026  18:58    <DIR>          hooks
+07.05.2026  18:58    <DIR>          info
+07.05.2026  18:58    <DIR>          logs
+07.05.2026  18:34    <DIR>          objects
+07.05.2026  18:25    <DIR>          refs
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\hooks
+
+07.05.2026  18:58    <DIR>          .
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\info
+
+07.05.2026  18:58    <DIR>          .
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\logs
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:34    <DIR>          refs
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\logs\refs
+
+07.05.2026  18:34    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:34    <DIR>          heads
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\logs\refs\heads
+
+07.05.2026  18:34    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+07.05.2026  18:34               200 main
+               1 File(s)            200 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects
+
+07.05.2026  18:34    <DIR>          .
+07.05.2026  18:59    <DIR>          02
+07.05.2026  18:59    <DIR>          1a
+07.05.2026  18:59    <DIR>          2e
+07.05.2026  18:59    <DIR>          4b
+07.05.2026  18:59    <DIR>          51
+07.05.2026  18:59    <DIR>          52
+07.05.2026  18:59    <DIR>          64
+07.05.2026  18:59    <DIR>          68
+07.05.2026  18:59    <DIR>          6c
+07.05.2026  18:59    <DIR>          71
+07.05.2026  18:59    <DIR>          7a
+07.05.2026  18:59    <DIR>          8b
+07.05.2026  18:59    <DIR>          9f
+07.05.2026  18:59    <DIR>          a5
+07.05.2026  18:59    <DIR>          ad
+07.05.2026  18:59    <DIR>          c3
+07.05.2026  18:59    <DIR>          d7
+07.05.2026  18:59    <DIR>          e9
+07.05.2026  18:59    <DIR>          f1
+07.05.2026  18:25    <DIR>          info
+07.05.2026  18:25    <DIR>          pack
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\02
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\1a
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\2e
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\4b
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\51
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\52
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\64
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\68
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\6c
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\71
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\7a
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\8b
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\9f
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\a5
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\ad
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\c3
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\d7
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\e9
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\f1
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\info
+
+07.05.2026  18:25    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\objects\pack
+
+07.05.2026  18:25    <DIR>          .
+07.05.2026  18:34    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\refs
+
+07.05.2026  18:25    <DIR>          .
+07.05.2026  18:59    <DIR>          heads
+07.05.2026  18:25    <DIR>          tags
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\refs\heads
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:25    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\.git\refs\tags
+
+07.05.2026  18:25    <DIR>          .
+07.05.2026  18:25    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules
+
+07.05.2026  18:58    <DIR>          .
+09.05.2026  14:43    <DIR>          ..
+07.05.2026  18:58    <DIR>          .bin
+07.05.2026  18:33    <DIR>          .vite
+07.05.2026  18:32    <DIR>          @oxc-project
+07.05.2026  18:32    <DIR>          @rolldown
+07.05.2026  18:58    <DIR>          detect-libc
+07.05.2026  18:58    <DIR>          fdir
+07.05.2026  18:58    <DIR>          lightningcss
+07.05.2026  18:58    <DIR>          lightningcss-win32-x64-msvc
+07.05.2026  18:58    <DIR>          nanoid
+07.05.2026  18:58    <DIR>          picocolors
+07.05.2026  18:58    <DIR>          picomatch
+07.05.2026  18:58    <DIR>          postcss
+07.05.2026  18:58    <DIR>          rolldown
+07.05.2026  18:58    <DIR>          source-map-js
+07.05.2026  18:58    <DIR>          tinyglobby
+07.05.2026  18:58    <DIR>          typescript
+07.05.2026  18:58    <DIR>          vite
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\.bin
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\.vite
+
+07.05.2026  18:33    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          deps
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\.vite\deps
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:33    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\@oxc-project
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          types
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\@oxc-project\types
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:32    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\@rolldown
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          binding-win32-x64-msvc
+07.05.2026  18:59    <DIR>          pluginutils
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\@rolldown\binding-win32-x64-msvc
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:32    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\@rolldown\pluginutils
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:32    <DIR>          ..
+07.05.2026  18:32    <DIR>          dist
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\@rolldown\pluginutils\dist
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32    <DIR>          filter
+07.05.2026  18:32                35 index.d.ts
+07.05.2026  18:32                35 index.js
+07.05.2026  18:32               129 utils.d.ts
+07.05.2026  18:32               519 utils.js
+               4 File(s)            718 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\@rolldown\pluginutils\dist\filter
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:32    <DIR>          ..
+07.05.2026  18:32             3ÿ427 composable-filters.d.ts
+07.05.2026  18:32             7ÿ116 composable-filters.js
+07.05.2026  18:32               875 filter-vite-plugins.d.ts
+07.05.2026  18:32             2ÿ394 filter-vite-plugins.js
+07.05.2026  18:32               120 index.d.ts
+07.05.2026  18:32               120 index.js
+07.05.2026  18:32             2ÿ102 simple-filters.d.ts
+07.05.2026  18:32             1ÿ952 simple-filters.js
+               8 File(s)         18ÿ106 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\detect-libc
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          lib
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\detect-libc\lib
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\fdir
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          dist
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\fdir\dist
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\lightningcss
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          node
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\lightningcss\node
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\lightningcss-win32-x64-msvc
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\nanoid
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          .claude
+07.05.2026  18:59    <DIR>          async
+07.05.2026  18:59    <DIR>          bin
+07.05.2026  18:59    <DIR>          non-secure
+07.05.2026  18:59    <DIR>          url-alphabet
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\nanoid\.claude
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\nanoid\async
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\nanoid\bin
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\nanoid\non-secure
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\nanoid\url-alphabet
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\picocolors
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\picomatch
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          lib
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\picomatch\lib
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\postcss
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          lib
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\postcss\lib
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\rolldown
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          bin
+07.05.2026  18:59    <DIR>          dist
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\rolldown\bin
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\rolldown\dist
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:32    <DIR>          shared
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\rolldown\dist\shared
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32            29ÿ632 binding-Cf9ARhL0.mjs
+07.05.2026  18:32            62ÿ123 binding-zH1vcmbM.d.mts
+07.05.2026  18:32            76ÿ561 bindingify-input-options-DQ2Xw70P.mjs
+07.05.2026  18:32             2ÿ909 constructors-CqLClvFc.mjs
+07.05.2026  18:32             3ÿ002 constructors-D0W3rNfA.d.mts
+07.05.2026  18:32           138ÿ988 define-config-5HJ1b9vG.d.mts
+07.05.2026  18:32               130 define-config-DJOr6Iwt.mjs
+07.05.2026  18:32             2ÿ926 error-D4ASW9r2.mjs
+07.05.2026  18:32               861 get-log-filter-semyr3Lj.d.mts
+07.05.2026  18:32             4ÿ229 load-config-bzR4o9nR.mjs
+07.05.2026  18:32             1ÿ449 logging-C6h4g8dA.d.mts
+07.05.2026  18:32             5ÿ826 logs-D80CXhvg.mjs
+07.05.2026  18:32               714 misc-DJYbNKZX.mjs
+07.05.2026  18:32             2ÿ113 normalize-string-or-regex-WerlQkgD.mjs
+07.05.2026  18:32             2ÿ628 parse-PDqEYZcA.mjs
+07.05.2026  18:32            49ÿ759 prompt-U5ajztzG.mjs
+07.05.2026  18:32             4ÿ420 resolve-tsconfig-CxJB93yb.mjs
+07.05.2026  18:32               986 rolldown-BbNcFBgw.mjs
+07.05.2026  18:32           151ÿ396 rolldown-build-CorVA9v1.mjs
+07.05.2026  18:32             5ÿ947 transform-DgZ3paSD.d.mts
+07.05.2026  18:32            11ÿ934 watch-CKLVan1f.mjs
+              21 File(s)        558ÿ533 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\source-map-js
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          lib
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\source-map-js\lib
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\tinyglobby
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          dist
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\tinyglobby\dist
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          bin
+07.05.2026  18:59    <DIR>          lib
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\bin
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:32    <DIR>          cs
+07.05.2026  18:32    <DIR>          de
+07.05.2026  18:32    <DIR>          es
+07.05.2026  18:32    <DIR>          fr
+07.05.2026  18:32    <DIR>          it
+07.05.2026  18:32    <DIR>          ja
+07.05.2026  18:32    <DIR>          ko
+07.05.2026  18:32    <DIR>          pl
+07.05.2026  18:32    <DIR>          pt-br
+07.05.2026  18:32    <DIR>          ru
+07.05.2026  18:32    <DIR>          tr
+07.05.2026  18:32    <DIR>          zh-cn
+07.05.2026  18:32    <DIR>          zh-tw
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\cs
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           322ÿ179 diagnosticMessages.generated.json
+               1 File(s)        322ÿ179 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\de
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           345ÿ510 diagnosticMessages.generated.json
+               1 File(s)        345ÿ510 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\es
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           341ÿ947 diagnosticMessages.generated.json
+               1 File(s)        341ÿ947 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\fr
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           347ÿ990 diagnosticMessages.generated.json
+               1 File(s)        347ÿ990 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\it
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           340ÿ423 diagnosticMessages.generated.json
+               1 File(s)        340ÿ423 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\ja
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           383ÿ553 diagnosticMessages.generated.json
+               1 File(s)        383ÿ553 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\ko
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           347ÿ991 diagnosticMessages.generated.json
+               1 File(s)        347ÿ991 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\pl
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           343ÿ981 diagnosticMessages.generated.json
+               1 File(s)        343ÿ981 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\pt-br
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           332ÿ413 diagnosticMessages.generated.json
+               1 File(s)        332ÿ413 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\ru
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           444ÿ708 diagnosticMessages.generated.json
+               1 File(s)        444ÿ708 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\tr
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           332ÿ492 diagnosticMessages.generated.json
+               1 File(s)        332ÿ492 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\zh-cn
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           297ÿ608 diagnosticMessages.generated.json
+               1 File(s)        297ÿ608 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\typescript\lib\zh-tw
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32           293ÿ400 diagnosticMessages.generated.json
+               1 File(s)        293ÿ400 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\vite
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:59    <DIR>          bin
+07.05.2026  18:32    <DIR>          dist
+07.05.2026  18:59    <DIR>          misc
+07.05.2026  18:59    <DIR>          types
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\vite\bin
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\vite\dist
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:32    <DIR>          client
+07.05.2026  18:32    <DIR>          node
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\vite\dist\client
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:32    <DIR>          ..
+07.05.2026  18:32            38ÿ626 client.mjs
+07.05.2026  18:32               612 env.mjs
+               2 File(s)         39ÿ238 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\vite\dist\node
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:32    <DIR>          ..
+07.05.2026  18:32    <DIR>          chunks
+07.05.2026  18:32            29ÿ945 cli.js
+07.05.2026  18:32           157ÿ484 index.d.ts
+07.05.2026  18:32             2ÿ700 index.js
+07.05.2026  18:32               137 internal.d.ts
+07.05.2026  18:32               138 internal.js
+07.05.2026  18:32            11ÿ459 module-runner.d.ts
+07.05.2026  18:32            54ÿ059 module-runner.js
+               7 File(s)        255ÿ922 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\vite\dist\node\chunks
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:32    <DIR>          ..
+07.05.2026  18:32           203ÿ496 build.js
+07.05.2026  18:32             1ÿ792 chunk.js
+07.05.2026  18:32           246ÿ735 dist.js
+07.05.2026  18:32            11ÿ710 lib.js
+07.05.2026  18:32            11ÿ612 logger.js
+07.05.2026  18:32             3ÿ064 moduleRunnerTransport.d.ts
+07.05.2026  18:32         1ÿ266ÿ130 node.js
+07.05.2026  18:32            18ÿ431 postcss-import.js
+               8 File(s)      1ÿ762ÿ970 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\vite\misc
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\vite\types
+
+07.05.2026  18:59    <DIR>          .
+07.05.2026  18:58    <DIR>          ..
+07.05.2026  18:32    <DIR>          internal
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\node_modules\vite\types\internal
+
+07.05.2026  18:32    <DIR>          .
+07.05.2026  18:59    <DIR>          ..
+07.05.2026  18:32             1ÿ420 cssPreprocessorOptions.d.ts
+07.05.2026  18:32               672 esbuildOptions.d.ts
+07.05.2026  18:32               520 lightningcssOptions.d.ts
+07.05.2026  18:32               791 rollupTypeCompat.d.ts
+07.05.2026  18:32               384 terserOptions.d.ts
+               5 File(s)          3ÿ787 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\public
+
+07.05.2026  18:58    <DIR>          .
+09.05.2026  14:43    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\src
+
+07.05.2026  19:02    <DIR>          .
+09.05.2026  14:43    <DIR>          ..
+07.05.2026  18:58    <DIR>          assets
+07.05.2026  19:02    <DIR>          core
+09.05.2026  14:38               443 main.ts
+07.05.2026  19:02    <DIR>          state
+09.05.2026  14:43             1ÿ080 style.css
+07.05.2026  19:02    <DIR>          types
+07.05.2026  19:02    <DIR>          ui
+               2 File(s)          1ÿ523 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\src\assets
+
+07.05.2026  18:58    <DIR>          .
+07.05.2026  19:02    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\src\core
+
+07.05.2026  19:02    <DIR>          .
+07.05.2026  19:02    <DIR>          ..
+07.05.2026  19:02             1ÿ764 GameEngine.ts
+               1 File(s)          1ÿ764 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\src\state
+
+07.05.2026  19:02    <DIR>          .
+07.05.2026  19:02    <DIR>          ..
+07.05.2026  19:02             1ÿ342 StateManager.ts
+               1 File(s)          1ÿ342 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\src\types
+
+07.05.2026  19:02    <DIR>          .
+07.05.2026  19:02    <DIR>          ..
+07.05.2026  19:02               174 index.ts
+               1 File(s)            174 bytes
+
+ Directory of C:\Users\adrian\OneDrive\Documents\.www\ade-zip-game\src\ui
+
+07.05.2026  19:02    <DIR>          .
+07.05.2026  19:02    <DIR>          ..
+07.05.2026  19:02             1ÿ962 UIController.ts
+               1 File(s)          1ÿ962 bytes
+
+     Total Files Listed:
+              77 File(s)      7ÿ121ÿ249 bytes
+             295 Dir(s)  65ÿ207ÿ812ÿ096 bytes free
