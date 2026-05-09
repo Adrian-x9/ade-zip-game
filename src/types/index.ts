@@ -5,4 +5,5 @@ export interface GameState {
   bestScore: number;
   level: number;
   status: GameStatus;
+  board: number[]; // Reprezentacja planszy w jednowymiarowej tablicy
 }

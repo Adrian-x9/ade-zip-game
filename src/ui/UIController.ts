@@ -50,9 +50,30 @@ export class UIController {
       this.scoreElement.textContent = state.score.toString();
     }
     
-    // Logika renderowania planszy w oparciu o state.status i dane z Engine'u
-    if (state.status === 'GAME_OVER') {
-      // Pokaż modal, wektory SVG etc.
+    const boardElement = document.getElementById('game-board');
+    if (boardElement) {
+      // Czyszczenie i ponowne renderowanie planszy (optymalizacja możliwa później, np. DocumentFragment)
+      boardElement.innerHTML = '';
+      
+      state.board.forEach((cellValue, index) => {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell';
+        cell.dataset.id = index.toString(); // ID potrzebne dla Engine'u
+        
+        // Jeśli wartość kafelka > 0, uznajemy go za "aktywny" (np. podświetlony)
+        if (cellValue > 0) {
+          cell.classList.add('active');
+          cell.textContent = cellValue.toString(); // Możesz to usunąć, jeśli kafelek ma być tylko kolorem
+        }
+        
+        boardElement.appendChild(cell);
+      });
+    }
+
+    // Blokada/odblokowanie przycisku Start
+    const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
+    if (startBtn) {
+      startBtn.disabled = state.status === 'PLAYING';
     }
   }
 }

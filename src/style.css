@@ -53,3 +53,25 @@ body {
   background-color: var(--text-color);
   color: var(--bg-color);
 }
+
+.grid-cell {
+  background-color: var(--cell-color);
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.grid-cell.active {
+  background-color: var(--cell-active);
+  color: var(--bg-color);
+}
+
+/* Lekki efekt kliknięcia (mobile-friendly) */
+.grid-cell:active {
+  transform: scale(0.95);
+}

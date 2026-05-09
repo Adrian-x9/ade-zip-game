@@ -8,15 +8,16 @@ export class StateManager {
     this.state = this.loadState();
   }
 
-  private getDefaultState(): GameState {
+private getDefaultState(): GameState {
     return {
       score: 0,
       bestScore: 0,
       level: 1,
-      status: 'IDLE'
+      status: 'IDLE',
+      board: Array(16).fill(0) // Tworzy tablicę [0,0,0...,0]
     };
   }
-
+  
   public getState(): Readonly<GameState> {
     return this.state;
   }
