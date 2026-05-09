@@ -5,7 +5,6 @@ export class UIController {
   private scoreElement: HTMLElement | null = null;
   public onAction: ((actionId: string) => void) | null = null;
   
-  // Zmienne do śledzenia przeciągania
   private isDragging: boolean = false;
   private currentDragCellId: string | null = null;
 
@@ -33,36 +32,30 @@ export class UIController {
   }
 
   private bindEvents(): void {
-    // START / NEXT LEVEL
     const startBtn = document.getElementById('btn-start');
     startBtn?.addEventListener('click', () => {
       if (this.onAction) this.onAction('START_GAME');
     });
 
-    // RESET ŚCIEŻKI
     const resetBtn = document.getElementById('btn-reset');
     resetBtn?.addEventListener('click', () => {
       if (this.onAction) this.onAction('RESET_PATH');
     });
 
-    // DEFINICJA PLANSZY! (Brakowało jej w Twoim kodzie)
     const board = document.getElementById('game-board');
     if (!board) return;
 
-    // Rozpoczęcie przeciągania
     board.addEventListener('pointerdown', (e) => {
       this.isDragging = true;
       this.handlePointerMove(e);
       board.setPointerCapture(e.pointerId);
     });
 
-    // Ruch palcem/myszką
     board.addEventListener('pointermove', (e) => {
       if (!this.isDragging) return;
       this.handlePointerMove(e);
     });
 
-    // Zakończenie przeciągania
     const stopDragging = (e: PointerEvent) => {
       this.isDragging = false;
       this.currentDragCellId = null;
@@ -78,7 +71,6 @@ export class UIController {
     
     if (target && target.matches('.grid-cell') && this.onAction) {
       const cellId = target.dataset.id;
-      
       if (cellId && cellId !== this.currentDragCellId) {
         this.currentDragCellId = cellId;
         this.onAction(`CELL_CLICK:${cellId}`);
@@ -92,39 +84,61 @@ export class UIController {
     }
     
     const boardElement = document.getElementById('game-board');
-    if (boardElement) {
-      boardElement.innerHTML = '';
-      
-      if (state.status === 'WIN') {
-        boardElement.classList.add('win');
-      } else {
-        boardElement.classList.remove('win');
-      }
-      
-      state.puzzle.forEach((cellValue, index) => {
-        const cell = document.createElement('div');
-        cell.className = 'grid-cell';
-        cell.dataset.id = index.toString();
-        
-        if (cellValue > 0) {
-          cell.textContent = cellValue.toString();
-          cell.classList.add('checkpoint');
-        }
-        
-        const pathIndex = state.path.indexOf(index);
-        if (pathIndex !== -1) {
-          cell.classList.add('active');
-          
-          if (pathIndex === state.path.length - 1) {
-            cell.classList.add('current');
-          }
-        }
-        
-        boardElement.appendChild(cell);
-      });
+    if (!boardElement) return;
+    
+    boardElement.innerHTML = '';
+    
+    const cols = Math.sqrt(state.puzzle.length);
+    boardElement.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    
+    if (state.status === 'WIN') {
+      boardElement.classList.add('win');
+    } else {
+      boardElement.classList.remove('win');
     }
 
-    // LOGIKA PRZYCISKÓW WYCIĄGNIĘTA POZA PĘTLĘ!
+    // RYSOWANIE WĘŻYKA SVG
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('class', 'path-svg');
+    svg.setAttribute('viewBox', `0 0 ${cols * 100} ${cols * 100}`); 
+
+    if (state.path.length > 0) {
+      const pathLine = document.createElementNS(svgNS, 'path');
+      pathLine.setAttribute('class', 'path-line');
+      
+      const d = state.path.map((id, index) => {
+        const cx = (id % cols) * 100 + 50; 
+        const cy = Math.floor(id / cols) * 100 + 50;
+        return `${index === 0 ? 'M' : 'L'} ${cx} ${cy}`;
+      }).join(' ');
+      
+      pathLine.setAttribute('d', d);
+      svg.appendChild(pathLine);
+    }
+    boardElement.appendChild(svg);
+
+    // RENDEROWANIE KAFELKÓW
+    state.puzzle.forEach((cellValue, index) => {
+      const cell = document.createElement('div');
+      cell.className = 'grid-cell';
+      cell.dataset.id = index.toString();
+      
+      if (cellValue > 0) {
+        cell.textContent = cellValue.toString();
+        cell.classList.add('checkpoint');
+      }
+      
+      const pathIndex = state.path.indexOf(index);
+      if (pathIndex !== -1) {
+        cell.classList.add('active');
+        if (pathIndex === state.path.length - 1) cell.classList.add('current');
+      }
+      
+      boardElement.appendChild(cell);
+    });
+
+    // LOGIKA PRZYCISKÓW (Właściwa lokalizacja)
     const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
     const resetBtn = document.getElementById('btn-reset') as HTMLButtonElement;
     
@@ -133,13 +147,10 @@ export class UIController {
         startBtn.textContent = 'Next Level';
         startBtn.disabled = false;
       } else {
-        startBtn.textContent = 'Start';
+        startBtn.textContent = state.status === 'PLAYING' ? `Level ${state.level}` : 'Start';
         startBtn.disabled = state.status === 'PLAYING';
       }
     }
-
-    if (resetBtn) {
-      resetBtn.disabled = state.status !== 'PLAYING';
-    }
+    if (resetBtn) resetBtn.disabled = state.status !== 'PLAYING';
   }
 }

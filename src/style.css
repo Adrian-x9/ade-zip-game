@@ -35,20 +35,37 @@ body {
 
 .game-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* Usunięte grid-template-columns - teraz skalujemy to dynamicznie z TypeScriptu! */
   gap: var(--grid-gap);
-  aspect-ratio: 1 / 1;
   margin-bottom: 20px;
-  touch-action: none; /* Blokuje przewijanie ekranu nad planszą */
+  touch-action: none;
+  position: relative; /* Kontener musi być bazą dla warstwy SVG */
 }
 
-.game-controls {
-  display: flex;
-  gap: 10px;
+/* --- WARSTWA SVG WĘŻYKA --- */
+.path-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; /* Kliknięcia mają przelatywać przez SVG do kafelków */
+  z-index: 1; /* Wężyk pod spodem... */
+}
+
+.path-line {
+  fill: none;
+  stroke: var(--cell-active);
+  stroke-width: 10; /* Dynamicznie dopasuje się do viewBox */
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.3s ease;
+}
+
+.game-grid.win .path-line {
+  stroke: #198754; /* Wężyk na zielono po wygranej */
 }
 
 .game-controls button {
-  flex: 1;
+  width: 100%;
   padding: 15px;
   font-size: 1.1rem;
   font-weight: bold;
@@ -57,12 +74,6 @@ body {
   border-radius: 8px;
   background-color: var(--text-color);
   color: var(--bg-color);
-  transition: opacity 0.2s ease;
-}
-
-.game-controls button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .grid-cell {
@@ -74,7 +85,10 @@ body {
   font-size: 1.5rem;
   font-weight: bold;
   cursor: pointer;
+  aspect-ratio: 1 / 1; /* ROZWIĄZANIE BŁĘDU #5: Zawsze kwadrat! */
   transition: background-color 0.2s ease, transform 0.1s ease;
+  position: relative;
+  z-index: 2; /* ...a kafelki nad wężykiem */
 }
 
 .grid-cell.active {
@@ -85,32 +99,4 @@ body {
 /* Lekki efekt kliknięcia (mobile-friendly) */
 .grid-cell:active {
   transform: scale(0.95);
-}
-
-.grid-cell.checkpoint {
-  background-color: #dee2e6; /* Lekko ciemniejszy dla widoczności liczb przed wejściem */
-  color: var(--text-color);
-}
-
-.grid-cell.active {
-  background-color: var(--cell-active);
-  color: var(--bg-color);
-}
-
-.grid-cell.current {
-  /* Wyróżnienie kafelka, na którym aktualnie stoimy */
-  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.4);
-  transform: scale(0.95);
-}
-
-/* Animacja i kolory w momencie wygranej */
-@keyframes winPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-.game-grid.win .grid-cell.active {
-  background-color: #198754; /* Zmiana na zielony kolor sukcesu */
-  animation: winPulse 0.4s ease-in-out;
 }

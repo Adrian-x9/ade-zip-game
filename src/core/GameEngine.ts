@@ -4,18 +4,10 @@ import { UIController } from '../ui/UIController';
 export class GameEngine {
   private stateManager: StateManager;
   private uiController: UIController;
-  // Predefiniowane plansze 4x4
-  private readonly LEVELS = [
-    [ 1, 0, 0, 0,   0, 0, 2, 0,   0, 0, 0, 0,   3, 0, 0, 4 ], // Lvl 1
-    [ 0, 0, 3, 0,   0, 2, 0, 0,   1, 0, 0, 0,   0, 0, 0, 4 ], // Lvl 2
-    [ 1, 0, 0, 4,   0, 0, 0, 0,   0, 2, 0, 0,   0, 0, 3, 0 ]  // Lvl 3
-  ];
 
   constructor(stateManager: StateManager, uiController: UIController) {
     this.stateManager = stateManager;
     this.uiController = uiController;
-
-    // Połączenie zdarzeń UI z logiką gry
     this.uiController.onAction = this.handleUIAction.bind(this);
   }
 
@@ -24,7 +16,7 @@ export class GameEngine {
     this.uiController.render(this.stateManager.getState());
   }
 
-private handleUIAction(action: string): void {
+  private handleUIAction(action: string): void {
     const currentState = this.stateManager.getState();
 
     if (action === 'START_GAME') {
@@ -33,43 +25,42 @@ private handleUIAction(action: string): void {
     }
 
     if (action === 'RESET_PATH' && currentState.status === 'PLAYING') {
-      this.stateManager.updateState({ path: [] }); // Czyści ścieżkę gracza
+      // KARA PUNKTOWA ZA RESET (Błąd #4)
+      const penaltyScore = Math.max(0, currentState.score - 15);
+      this.stateManager.updateState({ path: [], score: penaltyScore });
       this.uiController.render(this.stateManager.getState());
       return;
     }
 
     if (action.startsWith('CELL_CLICK:') && currentState.status === 'PLAYING') {
-      const cellId = action.split(':')[1];
+      const cellId = parseInt(action.split(':')[1], 10);
       this.processMove(cellId);
     }
   }
 
-private startGame(): void {
+  private startGame(): void {
     const state = this.stateManager.getState();
     const isNewGame = state.status === 'IDLE' || state.status === 'GAME_OVER';
+    const currentLevel = isNewGame ? 1 : state.level;
     
-    // Obliczanie indeksu poziomu (zapętla się, gdy braknie plansz)
-    const levelIndex = isNewGame ? 0 : (state.level - 1) % this.LEVELS.length;
+    // Wariant A: Zamiast tablicy wywołujemy Generator!
+    const puzzle = this.generateLevel(currentLevel);
     
     this.stateManager.updateState({ 
       status: 'PLAYING', 
       path: [],
-      puzzle: this.LEVELS[levelIndex],
+      puzzle: puzzle,
       score: isNewGame ? 0 : state.score,
-      level: isNewGame ? 1 : state.level
+      level: currentLevel
     });
     
     this.uiController.render(this.stateManager.getState());
   }
 
- private processMove(cellIdStr: string): void {
-    const cellId = parseInt(cellIdStr, 10);
+  private processMove(cellId: number): void {
     const state = this.stateManager.getState();
-    const { puzzle, path, status } = state;
+    const { puzzle, path } = state;
 
-    if (status !== 'PLAYING') return;
-
-    // 1. Zaczynamy ścieżkę: wymuszamy start od jedynki
     if (path.length === 0) {
       if (puzzle[cellId] === 1) {
         this.stateManager.updateState({ path: [cellId] });
@@ -78,49 +69,46 @@ private startGame(): void {
       return;
     }
 
-    // 2. Blokada przed chodzeniem po własnych śladach
-    if (path.includes(cellId)) {
-       // Tutaj w przyszłości dodamy mechanikę "Cofania" (Backtracking)
-       return;
-    }
+    if (path.includes(cellId)) return; // Backtracking obsłużymy ew. kiedy indziej
 
-    // 3. Walidacja sąsiedztwa (Grid 4x4 -> 4 kolumny)
     const lastCell = path[path.length - 1];
-    if (!this.isAdjacent(lastCell, cellId, 4)) {
-      return; // Odrzucamy ruch na ukos lub przeskakiwanie
+    const cols = Math.sqrt(puzzle.length);
+    if (!this.isAdjacent(lastCell, cellId, cols)) return;
+
+    // WALIDACJA (Rozwiązanie błędu #1)
+    const maxTarget = Math.max(...puzzle);
+    const expectedNext = this.getNextExpectedNumber(puzzle, path);
+
+    // Zablokowanie wejścia na cyfrę końcową, jeśli nie przeszliśmy przez CAŁĄ planszę
+    if (puzzle[cellId] === maxTarget && path.length + 1 !== puzzle.length) {
+      return; 
     }
 
-    // 4. Walidacja sekwencji: jeśli wdepnęliśmy na cyfrę, musi być właściwa
-    const nextExpectedNumber = this.getNextExpectedNumber(puzzle, path);
-    if (puzzle[cellId] > 0 && puzzle[cellId] !== nextExpectedNumber) {
-      return; // Odrzucamy ruch (to nie jest ta cyfra, na którą czekamy)
+    if (puzzle[cellId] > 0 && puzzle[cellId] !== maxTarget && puzzle[cellId] !== expectedNext) {
+      return;
     }
 
-    // Aplikacja ruchu
     const newPath = [...path, cellId];
     this.stateManager.updateState({ path: newPath });
 
-    // 5. Sprawdzenie warunku wygranej: wykorzystano wszystkie pola ORAZ trafiono w ostatnią cyfrę
     if (newPath.length === puzzle.length) {
       this.stateManager.updateState({ 
         status: 'WIN',
-        score: state.score + 100, // +100 pkt za przejście
-        level: state.level + 1    // Setup pod kolejny poziom
+        score: state.score + 100 + (state.level * 10), // Skalowanie nagrody
+        level: state.level + 1
       });
-      console.log('Level Completed! ZIP!');
     }
 
     this.uiController.render(this.stateManager.getState());
   }
 
-  // --- Funkcje Pomocnicze ---
+  // --- Algorytmy Pomocnicze i GENERATOR POZIOMÓW ---
 
   private isAdjacent(index1: number, index2: number, cols: number): boolean {
     const row1 = Math.floor(index1 / cols);
     const col1 = index1 % cols;
     const row2 = Math.floor(index2 / cols);
     const col2 = index2 % cols;
-    // Dystans Manhattan = 1 oznacza dokładnie jeden krok w górę, dół, lewo lub prawo
     return Math.abs(row1 - row2) + Math.abs(col1 - col2) === 1; 
   }
 
@@ -130,5 +118,70 @@ private startGame(): void {
       if (puzzle[id] > 0) currentMax = puzzle[id];
     }
     return currentMax + 1;
+  }
+
+  // Wariant A: Proceduralne Generowanie (Błąd #2 i #7)
+  private generateLevel(level: number): number[] {
+    const cols = level <= 5 ? 4 : 5; // Do 5 levelu gramy 4x4, od 6 levelu gramy 5x5
+    const total = cols * cols;
+    // Maksymalnie 6 punktów kontrolnych dla 4x4, 8 dla 5x5
+    const checkpointsCount = Math.min(3 + Math.floor(level / 2), cols === 4 ? 6 : 8); 
+
+    const path = this.generateHamiltonianPath(cols);
+    const grid = Array(total).fill(0);
+    
+    // 1 i Max na krańcach wygenerowanej ścieżki
+    grid[path[0]] = 1; 
+    grid[path[total - 1]] = checkpointsCount; 
+    
+    // Rozsiewanie wartości pośrednich (np. 2, 3, 4) na osi czasu ścieżki
+    const step = Math.floor(total / (checkpointsCount - 1));
+    for (let i = 2; i < checkpointsCount; i++) {
+      grid[path[(i - 1) * step]] = i;
+    }
+    
+    return grid;
+  }
+
+  // Klasyczny Depth-First Search z Backtrackingiem
+  private generateHamiltonianPath(cols: number): number[] {
+    const total = cols * cols;
+    let finalPath: number[] = [];
+    
+    const dfs = (curr: number, currentPath: number[], visited: Set<number>): boolean => {
+      if (currentPath.length === total) {
+        finalPath = [...currentPath];
+        return true;
+      }
+      
+      // Mieszanie kierunków dla losowości poziomów
+      const neighbors = this.getNeighbors(curr, cols).sort(() => Math.random() - 0.5);
+      
+      for (const n of neighbors) {
+        if (!visited.has(n)) {
+          visited.add(n);
+          currentPath.push(n);
+          if (dfs(n, currentPath, visited)) return true;
+          currentPath.pop(); // Backtrack
+          visited.delete(n);
+        }
+      }
+      return false;
+    };
+
+    const startNode = Math.floor(Math.random() * total);
+    dfs(startNode, [startNode], new Set([startNode]));
+    return finalPath;
+  }
+
+  private getNeighbors(index: number, cols: number): number[] {
+    const r = Math.floor(index / cols);
+    const c = index % cols;
+    const n = [];
+    if (r > 0) n.push(index - cols); // Góra
+    if (r < cols - 1) n.push(index + cols); // Dół
+    if (c > 0) n.push(index - 1); // Lewo
+    if (c < cols - 1) n.push(index + 1); // Prawo
+    return n;
   }
 }
