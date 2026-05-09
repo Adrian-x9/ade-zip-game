@@ -4,6 +4,10 @@ export class UIController {
   private appContainer: HTMLElement;
   private scoreElement: HTMLElement | null = null;
   public onAction: ((actionId: string) => void) | null = null;
+  
+  // Zmienne do śledzenia przeciągania
+  private isDragging: boolean = false;
+  private currentDragCellId: string | null = null;
 
   constructor(containerId: string) {
     const container = document.getElementById(containerId);
@@ -20,6 +24,7 @@ export class UIController {
       <main id="game-board" class="game-grid"></main>
       <footer class="game-controls">
         <button id="btn-start">Start</button>
+        <button id="btn-reset" disabled>Reset</button>
       </footer>
     `;
 
@@ -28,18 +33,57 @@ export class UIController {
   }
 
   private bindEvents(): void {
+    // START / NEXT LEVEL
     const startBtn = document.getElementById('btn-start');
     startBtn?.addEventListener('click', () => {
       if (this.onAction) this.onAction('START_GAME');
     });
 
-    const board = document.getElementById('game-board');
-    board?.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      if (target.matches('.grid-cell') && this.onAction) {
-        this.onAction(`CELL_CLICK:${target.dataset.id}`);
-      }
+    // RESET ŚCIEŻKI
+    const resetBtn = document.getElementById('btn-reset');
+    resetBtn?.addEventListener('click', () => {
+      if (this.onAction) this.onAction('RESET_PATH');
     });
+
+    // DEFINICJA PLANSZY! (Brakowało jej w Twoim kodzie)
+    const board = document.getElementById('game-board');
+    if (!board) return;
+
+    // Rozpoczęcie przeciągania
+    board.addEventListener('pointerdown', (e) => {
+      this.isDragging = true;
+      this.handlePointerMove(e);
+      board.setPointerCapture(e.pointerId);
+    });
+
+    // Ruch palcem/myszką
+    board.addEventListener('pointermove', (e) => {
+      if (!this.isDragging) return;
+      this.handlePointerMove(e);
+    });
+
+    // Zakończenie przeciągania
+    const stopDragging = (e: PointerEvent) => {
+      this.isDragging = false;
+      this.currentDragCellId = null;
+      board.releasePointerCapture(e.pointerId);
+    };
+
+    board.addEventListener('pointerup', stopDragging);
+    board.addEventListener('pointercancel', stopDragging);
+  }
+
+  private handlePointerMove(e: PointerEvent): void {
+    const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement;
+    
+    if (target && target.matches('.grid-cell') && this.onAction) {
+      const cellId = target.dataset.id;
+      
+      if (cellId && cellId !== this.currentDragCellId) {
+        this.currentDragCellId = cellId;
+        this.onAction(`CELL_CLICK:${cellId}`);
+      }
+    }
   }
 
   public render(state: Readonly<GameState>): void {
@@ -51,7 +95,6 @@ export class UIController {
     if (boardElement) {
       boardElement.innerHTML = '';
       
-      // Dodajemy klasę CSS dla efektu wygranej
       if (state.status === 'WIN') {
         boardElement.classList.add('win');
       } else {
@@ -63,18 +106,15 @@ export class UIController {
         cell.className = 'grid-cell';
         cell.dataset.id = index.toString();
         
-        // 1. Renderowanie punktów kontrolnych (liczb)
         if (cellValue > 0) {
           cell.textContent = cellValue.toString();
           cell.classList.add('checkpoint');
         }
         
-        // 2. Renderowanie ścieżki
         const pathIndex = state.path.indexOf(index);
         if (pathIndex !== -1) {
-          cell.classList.add('active'); // Odwiedzone
+          cell.classList.add('active');
           
-          // Podświetlenie aktualnej pozycji (głowa węża)
           if (pathIndex === state.path.length - 1) {
             cell.classList.add('current');
           }
@@ -84,15 +124,22 @@ export class UIController {
       });
     }
 
+    // LOGIKA PRZYCISKÓW WYCIĄGNIĘTA POZA PĘTLĘ!
     const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
+    const resetBtn = document.getElementById('btn-reset') as HTMLButtonElement;
+    
     if (startBtn) {
       if (state.status === 'WIN') {
-        startBtn.textContent = 'Play Again';
+        startBtn.textContent = 'Next Level';
         startBtn.disabled = false;
       } else {
         startBtn.textContent = 'Start';
         startBtn.disabled = state.status === 'PLAYING';
       }
+    }
+
+    if (resetBtn) {
+      resetBtn.disabled = state.status !== 'PLAYING';
     }
   }
 }

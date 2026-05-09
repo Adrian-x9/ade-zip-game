@@ -4,6 +4,12 @@ import { UIController } from '../ui/UIController';
 export class GameEngine {
   private stateManager: StateManager;
   private uiController: UIController;
+  // Predefiniowane plansze 4x4
+  private readonly LEVELS = [
+    [ 1, 0, 0, 0,   0, 0, 2, 0,   0, 0, 0, 0,   3, 0, 0, 4 ], // Lvl 1
+    [ 0, 0, 3, 0,   0, 2, 0, 0,   1, 0, 0, 0,   0, 0, 0, 4 ], // Lvl 2
+    [ 1, 0, 0, 4,   0, 0, 0, 0,   0, 2, 0, 0,   0, 0, 3, 0 ]  // Lvl 3
+  ];
 
   constructor(stateManager: StateManager, uiController: UIController) {
     this.stateManager = stateManager;
@@ -18,11 +24,17 @@ export class GameEngine {
     this.uiController.render(this.stateManager.getState());
   }
 
-  private handleUIAction(action: string): void {
+private handleUIAction(action: string): void {
     const currentState = this.stateManager.getState();
 
     if (action === 'START_GAME') {
       this.startGame();
+      return;
+    }
+
+    if (action === 'RESET_PATH' && currentState.status === 'PLAYING') {
+      this.stateManager.updateState({ path: [] }); // Czyści ścieżkę gracza
+      this.uiController.render(this.stateManager.getState());
       return;
     }
 
@@ -32,12 +44,20 @@ export class GameEngine {
     }
   }
 
-  private startGame(): void {
-    this.stateManager.resetCurrentGame();
-    this.stateManager.updateState({ status: 'PLAYING' });
+private startGame(): void {
+    const state = this.stateManager.getState();
+    const isNewGame = state.status === 'IDLE' || state.status === 'GAME_OVER';
     
-    // Tutaj inicjalizacja planszy, reset timerów itp.
-    console.log('Game Started!');
+    // Obliczanie indeksu poziomu (zapętla się, gdy braknie plansz)
+    const levelIndex = isNewGame ? 0 : (state.level - 1) % this.LEVELS.length;
+    
+    this.stateManager.updateState({ 
+      status: 'PLAYING', 
+      path: [],
+      puzzle: this.LEVELS[levelIndex],
+      score: isNewGame ? 0 : state.score,
+      level: isNewGame ? 1 : state.level
+    });
     
     this.uiController.render(this.stateManager.getState());
   }
@@ -82,7 +102,11 @@ export class GameEngine {
 
     // 5. Sprawdzenie warunku wygranej: wykorzystano wszystkie pola ORAZ trafiono w ostatnią cyfrę
     if (newPath.length === puzzle.length) {
-      this.stateManager.updateState({ status: 'WIN' });
+      this.stateManager.updateState({ 
+        status: 'WIN',
+        score: state.score + 100, // +100 pkt za przejście
+        level: state.level + 1    // Setup pod kolejny poziom
+      });
       console.log('Level Completed! ZIP!');
     }
 

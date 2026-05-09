@@ -35,15 +35,20 @@ body {
 
 .game-grid {
   display: grid;
-  /* Domyślnie siatka 4x4, to będziemy kontrolować z TS */
   grid-template-columns: repeat(4, 1fr);
   gap: var(--grid-gap);
   aspect-ratio: 1 / 1;
   margin-bottom: 20px;
+  touch-action: none; /* Blokuje przewijanie ekranu nad planszą */
+}
+
+.game-controls {
+  display: flex;
+  gap: 10px;
 }
 
 .game-controls button {
-  width: 100%;
+  flex: 1;
   padding: 15px;
   font-size: 1.1rem;
   font-weight: bold;
@@ -52,6 +57,12 @@ body {
   border-radius: 8px;
   background-color: var(--text-color);
   color: var(--bg-color);
+  transition: opacity 0.2s ease;
+}
+
+.game-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .grid-cell {

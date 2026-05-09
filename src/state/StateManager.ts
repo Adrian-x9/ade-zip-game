@@ -39,27 +39,33 @@ private getDefaultState(): GameState {
     this.saveState();
   }
 
-  private saveState(): void {
+ private saveState(): void {
     try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state));
+      // Zapisujemy TYLKO rekord punktowy, żeby uniknąć blokady przy odświeżeniu
+      const saveObj = { bestScore: this.state.bestScore };
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(saveObj));
     } catch (e) {
       console.warn('LocalStorage is not available:', e);
     }
   }
 
-  private loadState(): GameState {
+ private loadState(): GameState {
+    const defaultState = this.getDefaultState();
     try {
       const saved = localStorage.getItem(this.STORAGE_KEY);
       if (saved) {
-        return { ...this.getDefaultState(), ...JSON.parse(saved) };
+        const parsed = JSON.parse(saved);
+        // Nadpisujemy tylko bestScore, reszta to zawsze czysty start
+        return { ...defaultState, bestScore: parsed.bestScore || 0 };
       }
     } catch (e) {
       console.warn('Failed to parse save data:', e);
     }
-    return this.getDefaultState();
+    return defaultState;
   }
   
-  public resetCurrentGame(): void {
-    this.updateState({ score: 0, status: 'IDLE' });
+public resetCurrentGame(): void {
+    // Dodano czyszczenie tablicy path!
+    this.updateState({ score: 0, status: 'IDLE', path: [] });
   }
 }
