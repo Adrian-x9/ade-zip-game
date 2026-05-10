@@ -1,4 +1,5 @@
 export type GameStatus = 'IDLE' | 'PLAYING' | 'GAME_OVER' | 'WIN';
+export type Language = 'EN' | 'PL' | 'DE';
 
 export interface GameState {
   score: number;
