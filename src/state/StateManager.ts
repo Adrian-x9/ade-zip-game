@@ -8,7 +8,8 @@ export class StateManager {
     this.state = this.loadState();
   }
 
-private getDefaultState(): GameState {
+  private getDefaultState(): GameState {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     return {
       score: 0,
       bestScore: 0,
@@ -21,8 +22,8 @@ private getDefaultState(): GameState {
       savesLeft: 3,
       loadsLeft: 3,
       savedSnapshot: null,
-      lang: 'EN', 
-      isDarkMode: false
+      lang: 'EN',
+      isDarkMode: prefersDark
     };
   }
 
@@ -32,49 +33,57 @@ private getDefaultState(): GameState {
 
   public updateState(partialState: Partial<GameState>): void {
     this.state = { ...this.state, ...partialState };
-    
+
     if (this.state.score > this.state.bestScore) {
       this.state.bestScore = this.state.score;
     }
-    
+
     this.saveState();
   }
 
- private saveState(): void {
+  private saveState(): void {
     try {
-      // Zapisujemy TYLKO rekord punktowy, żeby uniknąć blokady przy odświeżeniu
-      const saveObj = { bestScore: this.state.bestScore };
+      const saveObj = {
+        bestScore: this.state.bestScore,
+        lang: this.state.lang,
+        isDarkMode: this.state.isDarkMode
+      };
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(saveObj));
     } catch (e) {
       console.warn('LocalStorage is not available:', e);
     }
   }
 
- private loadState(): GameState {
+  private loadState(): GameState {
     const defaultState = this.getDefaultState();
     try {
       const saved = localStorage.getItem(this.STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Nadpisujemy tylko bestScore, reszta to zawsze czysty start
-        return { ...defaultState, bestScore: parsed.bestScore || 0 };
+        return {
+          ...defaultState,
+          bestScore: parsed.bestScore || 0,
+          lang: parsed.lang || defaultState.lang,
+          // ?? zamiast || – false to poprawna wartość, nie fallback
+          isDarkMode: parsed.isDarkMode ?? defaultState.isDarkMode
+        };
       }
     } catch (e) {
       console.warn('Failed to parse save data:', e);
     }
     return defaultState;
   }
-  
-public resetCurrentGame(): void {
-    this.updateState({ 
-      score: 0, 
-      status: 'IDLE', 
+
+  public resetCurrentGame(): void {
+    this.updateState({
+      score: 0,
+      status: 'IDLE',
       path: [],
       lives: 3,
       savesLeft: 3,
       loadsLeft: 3,
       savedSnapshot: null
-      // lang pozostaje bez zmian!
+      // lang i isDarkMode pozostają bez zmian
     });
   }
 }

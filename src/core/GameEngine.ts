@@ -129,7 +129,8 @@ export class GameEngine {
       puzzle: puzzle,
       score: isNewGame ? 0 : state.score,
       level: currentLevel,
-      time: 0 
+      time: 0, 
+      ...(isNewGame ? { lives: 3, savesLeft: 3, loadsLeft: 3, savedSnapshot: null } : { savedSnapshot: null })
     });
     
     this.uiController.render(this.stateManager.getState());

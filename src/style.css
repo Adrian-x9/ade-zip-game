@@ -2,7 +2,7 @@
   /* Nowoczesna paleta w stylu Apple/LinkedIn */
   --bg-color: #ffffff;
   --text-main: #1D1D1F;
-  --text-muted: #86868B;
+  --text-muted: #6E6E73;
   
   --grid-gap: 8px;
   --cell-empty: #F5F5F7;
@@ -68,7 +68,7 @@ body {
 }
 
 .btn-micro:disabled {
-  opacity: 0.3;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
