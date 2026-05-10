@@ -35,11 +35,15 @@ body {
   box-sizing: border-box;
 }
 
-/* --- GÓRNE MENU TAKTYCZNE --- */
-.top-nav {
+/* --- LAYOUT MENU DWUWIERSZOWEGO --- */
+.top-nav-row {
   display: flex;
   justify-content: space-between;
   gap: 8px;
+  margin-bottom: 8px;
+}
+
+.top-nav-row:last-of-type {
   margin-bottom: 20px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--cell-checkpoint);
@@ -66,6 +70,11 @@ body {
 .btn-micro:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+}
+
+/* Opcjonalne wyróżnienie przycisku języka */
+.lang-btn {
+  color: var(--cell-active);
 }
 
 /* --- KONTENERY UI --- */
@@ -101,6 +110,10 @@ body {
   margin-left: 4px;
 }
 
+.stat-item.justify-right {
+  justify-content: flex-end;
+}
+
 .score-display {
   text-align: right;
 }
@@ -116,9 +129,9 @@ body {
   font-weight: 600;
 }
 
-/* --- PLANSZA I WĘŻYK (NAPRAWIONE POZYCJONOWANIE) --- */
+/* --- PLANSZA I WĘŻYK --- */
 .board-container {
-  position: relative; /* KLUCZOWE: Trzyma SVG w ryzach! */
+  position: relative;
   margin-bottom: 24px;
   touch-action: none;
 }
@@ -130,7 +143,6 @@ body {
   z-index: 1;
 }
 
-/* SVG teraz jest dokładnie nad Gridem */
 .path-svg {
   position: absolute;
   top: 0; 
@@ -138,7 +150,8 @@ body {
   width: 100%; 
   height: 100%;
   pointer-events: none;
-  z-index: 2; /* Wężyk NAD siatką */
+  z-index: 2;
+  mix-blend-mode: normal; /* SKONSOLIDOWANE: Usunięto duplikat z dołu pliku */
 }
 
 .path-line {
@@ -148,7 +161,6 @@ body {
   stroke-linecap: round;
   stroke-linejoin: round;
   transition: stroke 0.3s ease;
-  /* Blend mode pozwala widzieć numery kafelków pod wężykiem */
   mix-blend-mode: multiply; 
 }
 
@@ -185,12 +197,20 @@ body {
   box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
 }
 
-/* Lekkie wyróżnienie głowy węża */
 .grid-cell.current {
   transform: scale(0.92);
 }
 
-/* --- KONTROLERY --- */
+/* Pole wycięte z logiki (Dziura) */
+.grid-cell.hole {
+  background-color: transparent;
+  box-shadow: none;
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.1;
+}
+
+/* --- KONTROLERY STOPKI --- */
 .game-controls {
   display: flex;
   gap: 12px;
@@ -227,24 +247,40 @@ body {
   transform: scale(0.96);
 }
 
-.grid-cell.hole {
-  background-color: transparent;
-  box-shadow: none;
-  cursor: default;
-  pointer-events: none; /* Gracz nie może wejść na dziurę */
-  opacity: 0.1; /* Subtelny zarys pustego pola */
+/* --- SYSTEMOWY DARK MODE --- */
+body.dark-mode {
+  --bg-color: #1C1C1E;
+  --text-main: #F5F5F7;
+  --text-muted: #8E8E93;
+  
+  --cell-empty: #2C2C2E;
+  --cell-checkpoint: #3A3A3C;
+  --cell-active: #0A84FF;
+  --cell-success: #30D158;
 }
 
-/* Zabezpieczenie przed błędem warstwy SVG na dziurach */
-.path-svg {
-  mix-blend-mode: normal; /* Poprawka czytelności na białym tle */
+body.dark-mode .game-wrapper {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  background: #1C1C1E;
 }
 
-.stat-item.justify-right {
-  justify-content: flex-end;
+body.dark-mode .grid-cell.active {
+  box-shadow: 0 4px 12px rgba(10, 132, 255, 0.4);
 }
 
-/* Opcjonalne wyróżnienie przycisku języka */
-.lang-btn {
-  color: var(--cell-active);
+body.dark-mode .path-line {
+  mix-blend-mode: screen; 
+  opacity: 0.8;
+}
+
+body.dark-mode #btn-start {
+  background-color: var(--text-main);
+  color: var(--bg-color);
+  font-weight: 800;
+}
+
+body.dark-mode #btn-start:disabled {
+  background-color: var(--cell-checkpoint);
+  color: var(--text-muted);
+  opacity: 0.7;
 }

@@ -20,6 +20,12 @@ export class GameEngine {
   private handleUIAction(action: string): void {
     const currentState = this.stateManager.getState();
 
+    if (action === 'TOGGLE_DARK_MODE') {
+      this.stateManager.updateState({ isDarkMode: !currentState.isDarkMode });
+      this.uiController.render(this.stateManager.getState());
+      return;
+    }
+
     if (action === 'NEW_GAME') {
       if (this.timerInterval) clearInterval(this.timerInterval);
       this.stateManager.resetCurrentGame();

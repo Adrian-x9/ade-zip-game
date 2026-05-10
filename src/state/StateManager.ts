@@ -21,7 +21,8 @@ private getDefaultState(): GameState {
       savesLeft: 3,
       loadsLeft: 3,
       savedSnapshot: null,
-      lang: 'EN' // <--- Domyślny język bazowy
+      lang: 'EN', 
+      isDarkMode: false
     };
   }
 

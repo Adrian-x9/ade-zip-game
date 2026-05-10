@@ -13,7 +13,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     next: "Next Level",
     try: "Try Again",
     level: "Level",
-    reset: "Reset"
+    reset: "Reset",
+    dark: "Dark",
+    light: "Light"
   },
   PL: {
     save: "Zapisz",
@@ -26,7 +28,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     next: "Następny",
     try: "Od nowa",
     level: "Poziom",
-    reset: "Reset"
+    reset: "Reset",
+    dark: "Ciemny",
+    light: "Jasny"
   },
   DE: {
     save: "Speichern",
@@ -39,7 +43,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     next: "Nächstes",
     try: "Nochmal",
     level: "Level",
-    reset: "Reset"
+    reset: "Reset",
+    dark: "Dunkel",
+    light: "Hell"
   }
 };
 
@@ -61,11 +67,14 @@ export class UIController {
     // translate="no" całkowicie blokuje niszczycielskie zapędy auto-translatorów OS
     this.appContainer.innerHTML = `
       <div class="game-wrapper" translate="no">
-        <nav class="top-nav">
+        <nav class="top-nav-row">
+          <button id="btn-new" class="btn-micro"></button>
+          <button id="btn-lang" class="btn-micro"></button>
+          <button id="btn-dark" class="btn-micro"></button>
+        </nav>
+        <nav class="top-nav-row">
           <button id="btn-save" class="btn-micro"></button>
           <button id="btn-load" class="btn-micro"></button>
-          <button id="btn-new" class="btn-micro"></button>
-          <button id="btn-lang" class="btn-micro lang-btn"></button>
         </nav>
 
         <header class="game-header">
@@ -114,6 +123,10 @@ export class UIController {
     trigger('btn-new', 'NEW_GAME');
     trigger('btn-lang', 'CHANGE_LANG'); // <--- Nasłuch na zmianę języka
 
+    document.getElementById('btn-dark')?.addEventListener('click', () => {
+      if (this.onAction) this.onAction('TOGGLE_DARK_MODE');
+    });
+
     const board = document.getElementById('game-board');
     if (!board) return;
 
@@ -151,6 +164,19 @@ export class UIController {
 
   public render(state: Readonly<GameState>): void {
     const t = TRANSLATIONS[state.lang];
+
+    // OBSŁUGA DARK MODE (Klasa na body dla globalnego zasięgu)
+    if (state.isDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+
+    // Tekst przycisku Dark Mode
+    const darkBtn = document.getElementById('btn-dark');
+    if (darkBtn) {
+      darkBtn.textContent = state.isDarkMode ? `☀️ ${t.light}` : `🌙 ${t.dark}`;
+    }
 
     // --- INTERNACJONALIZACJA (i18n) Etykiet ---
     const setTxt = (id: string, text: string) => {

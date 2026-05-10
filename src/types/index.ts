@@ -15,4 +15,5 @@ export interface GameState {
   loadsLeft: number;  // Gwiazdki odczytu (domyślnie 3)
   savedSnapshot: string | null; // Zakodowany zrzut planszy w pamięci
   lang: Language;
+  isDarkMode: boolean;
 }
