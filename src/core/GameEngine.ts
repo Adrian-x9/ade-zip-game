@@ -36,7 +36,6 @@ export class GameEngine {
     if (action === 'CHANGE_LANG') {
       const langs: ('EN' | 'PL' | 'DE')[] = ['EN', 'PL', 'DE'];
       const nextIndex = (langs.indexOf(currentState.lang) + 1) % langs.length;
-      
       this.stateManager.updateState({ lang: langs[nextIndex] });
       this.uiController.render(this.stateManager.getState());
       return;
@@ -47,33 +46,37 @@ export class GameEngine {
       return;
     }
 
-    // --- ZAPIS TAKTYCZNY (SAVE ***) ---
+    // --- ZAPIS TAKTYCZNY (SAVE) ---
     if (action === 'TACTICAL_SAVE' && currentState.status === 'PLAYING' && currentState.savesLeft > 0) {
-      const snapshot = JSON.stringify({ 
-        path: [...currentState.path], 
-        time: currentState.time 
+      const snapshot = JSON.stringify({
+        path: [...currentState.path],
+        time: currentState.time,
+        puzzle: [...currentState.puzzle],  // FIX: puzzle w snapshot żeby load wiedział co przywrócić
+        level: currentState.level
       });
-      
-      this.stateManager.updateState({ 
-        savedSnapshot: snapshot, 
-        savesLeft: currentState.savesLeft - 1 
+
+      this.stateManager.updateState({
+        savedSnapshot: snapshot,
+        savesLeft: currentState.savesLeft - 1
       });
-      
+
       this.uiController.render(this.stateManager.getState());
       return;
     }
 
-    // --- ODCZYT TAKTYCZNY (LOAD ***) ---
+    // --- ODCZYT TAKTYCZNY (LOAD) ---
     if (action === 'TACTICAL_LOAD' && currentState.status === 'PLAYING' && currentState.loadsLeft > 0 && currentState.savedSnapshot) {
       try {
         const parsed = JSON.parse(currentState.savedSnapshot);
-        
-        this.stateManager.updateState({ 
-          path: parsed.path, 
+
+        this.stateManager.updateState({
+          path: parsed.path,
           time: parsed.time,
-          loadsLeft: currentState.loadsLeft - 1 
+          puzzle: parsed.puzzle,  // FIX: przywracamy planszę ze snapshotu
+          level: parsed.level,
+          loadsLeft: currentState.loadsLeft - 1
         });
-        
+
         this.uiController.render(this.stateManager.getState());
       } catch (e) {
         console.error("Tactical Load Error:", e);
@@ -84,7 +87,7 @@ export class GameEngine {
     // --- SURVIVAL: RESET ZABIERA ŻYCIE ---
     if (action === 'RESET_PATH' && currentState.status === 'PLAYING') {
       const remainingLives = currentState.lives - 1;
-      
+
       if (remainingLives <= 0) {
         if (this.timerInterval) clearInterval(this.timerInterval);
         this.stateManager.updateState({ status: 'GAME_OVER', lives: 0 });
@@ -92,7 +95,7 @@ export class GameEngine {
         this.stateManager.updateState({ path: [], lives: remainingLives, time: 0 });
         this.startTimer();
       }
-      
+
       this.uiController.render(this.stateManager.getState());
       return;
     }
@@ -108,8 +111,9 @@ export class GameEngine {
     this.timerInterval = setInterval(() => {
       const state = this.stateManager.getState();
       if (state.status === 'PLAYING') {
-        this.stateManager.updateState({ time: state.time + 1 });
-        this.uiController.updateTimer(state.time); 
+        const newTime = state.time + 1;
+        this.stateManager.updateState({ time: newTime });
+        this.uiController.updateTimer(newTime);  // FIX: przekazujemy nową wartość, nie starą
       } else {
         if (this.timerInterval) clearInterval(this.timerInterval);
       }
@@ -120,28 +124,29 @@ export class GameEngine {
     const state = this.stateManager.getState();
     const isNewGame = state.status === 'IDLE' || state.status === 'GAME_OVER';
     const currentLevel = isNewGame ? 1 : state.level;
-    
+
     const puzzle = this.generateLevel(currentLevel);
-    
-    this.stateManager.updateState({ 
-      status: 'PLAYING', 
+
+    this.stateManager.updateState({
+      status: 'PLAYING',
       path: [],
       puzzle: puzzle,
       score: isNewGame ? 0 : state.score,
       level: currentLevel,
-      time: 0, 
-      ...(isNewGame ? { lives: 3, savesLeft: 3, loadsLeft: 3, savedSnapshot: null } : { savedSnapshot: null })
+      time: 0,
+      // FIX: Try Again resetuje życia i tokeny; savedSnapshot celowo NIE jest tu kasowany
+      ...(isNewGame ? { lives: 3, savesLeft: 3, loadsLeft: 3 } : {})
     });
-    
+
     this.uiController.render(this.stateManager.getState());
-    this.startTimer(); 
+    this.startTimer();
   }
 
   private processMove(cellId: number): void {
     const state = this.stateManager.getState();
     const { puzzle, path } = state;
 
-    if (puzzle[cellId] === -1) return; // Ignorujemy wejście na dziurę
+    if (puzzle[cellId] === -1) return;
 
     if (path.length === 0) {
       if (puzzle[cellId] === 1) {
@@ -151,7 +156,7 @@ export class GameEngine {
       return;
     }
 
-    if (path.includes(cellId)) return; 
+    if (path.includes(cellId)) return;
 
     const lastCell = path[path.length - 1];
     const cols = Math.sqrt(puzzle.length);
@@ -160,29 +165,27 @@ export class GameEngine {
     const maxTarget = Math.max(...puzzle);
     const expectedNext = this.getNextExpectedNumber(puzzle, path);
 
-    // Walidacja końca ścieżki na podstawie liczby aktywnych (grywalnych) pól
     if (puzzle[cellId] === maxTarget) {
       const playableCells = puzzle.filter(v => v !== -1).length;
-      if (path.length + 1 !== playableCells) return; 
+      if (path.length + 1 !== playableCells) return;
     }
-    
+
     if (puzzle[cellId] > 0 && puzzle[cellId] !== maxTarget && puzzle[cellId] !== expectedNext) return;
 
     const newPath = [...path, cellId];
     this.stateManager.updateState({ path: newPath });
 
-    // Warunek wygranej uwzględniający wycięte pola (dziury)
     const totalPlayable = puzzle.filter(v => v !== -1).length;
     if (newPath.length === totalPlayable) {
       const stateUpdate = this.stateManager.getState();
-      const timeBonus = Math.max(0, 100 - stateUpdate.time); 
-      
-      this.stateManager.updateState({ 
+      const timeBonus = Math.max(0, 100 - stateUpdate.time);
+
+      this.stateManager.updateState({
         status: 'WIN',
         score: stateUpdate.score + 100 + (stateUpdate.level * 10) + timeBonus,
         level: stateUpdate.level + 1
       });
-      
+
       if (this.timerInterval) clearInterval(this.timerInterval);
     }
 
@@ -194,7 +197,7 @@ export class GameEngine {
     const col1 = index1 % cols;
     const row2 = Math.floor(index2 / cols);
     const col2 = index2 % cols;
-    return Math.abs(row1 - row2) + Math.abs(col1 - col2) === 1; 
+    return Math.abs(row1 - row2) + Math.abs(col1 - col2) === 1;
   }
 
   private getNextExpectedNumber(puzzle: number[], path: number[]): number {
@@ -206,19 +209,17 @@ export class GameEngine {
   }
 
   private generateLevel(level: number): number[] {
-    // Skalowanie: 4x4 (poziomy 1-5), 5x5 (poziomy 6-11), 6x6 (od poziomu 12)
-    const cols = level <= 5 ? 4 : (level <= 11 ? 5 : 6); 
+    const cols = level <= 5 ? 4 : (level <= 11 ? 5 : 6);
     const total = cols * cols;
-    const checkpointsCount = Math.min(3 + Math.floor(level / 2), cols === 6 ? 10 : 8); 
+    const checkpointsCount = Math.min(3 + Math.floor(level / 2), cols === 6 ? 10 : 8);
 
     const path = this.generateHamiltonianPath(cols);
     const grid = Array(total).fill(0);
-    
+
     let startIndex = 0;
     let endIndex = total - 1;
     let playablePath = path;
 
-    // Dziury: Od poziomu 30 odcinamy początek i koniec wygenerowanej ścieżki Hamiltona
     if (level >= 30) {
       grid[path[0]] = -1;
       grid[path[total - 1]] = -1;
@@ -227,21 +228,21 @@ export class GameEngine {
       endIndex = playablePath.length - 1;
     }
 
-    grid[playablePath[startIndex]] = 1; 
-    grid[playablePath[endIndex]] = checkpointsCount; 
-    
+    grid[playablePath[startIndex]] = 1;
+    grid[playablePath[endIndex]] = checkpointsCount;
+
     const step = Math.floor(playablePath.length / (checkpointsCount - 1));
     for (let i = 2; i < checkpointsCount; i++) {
       grid[playablePath[(i - 1) * step]] = i;
     }
-    
+
     return grid;
   }
 
   private generateHamiltonianPath(cols: number): number[] {
     const total = cols * cols;
     let finalPath: number[] = [];
-    
+
     const countUnvisitedNeighbors = (node: number, visited: Set<number>): number => {
       let count = 0;
       for (const n of this.getNeighbors(node, cols)) {
@@ -255,7 +256,7 @@ export class GameEngine {
         finalPath = [...currentPath];
         return true;
       }
-      
+
       const neighbors = this.getNeighbors(curr, cols)
         .filter(n => !visited.has(n))
         .map(n => ({ id: n, weight: countUnvisitedNeighbors(n, visited) }))
@@ -263,24 +264,24 @@ export class GameEngine {
           if (a.weight === b.weight) return Math.random() - 0.5;
           return a.weight - b.weight;
         });
-      
+
       for (const neighbor of neighbors) {
         visited.add(neighbor.id);
         currentPath.push(neighbor.id);
         if (dfs(neighbor.id, currentPath, visited)) return true;
-        currentPath.pop(); 
+        currentPath.pop();
         visited.delete(neighbor.id);
       }
       return false;
     };
 
     let startNode = Math.floor(Math.random() * total);
-    
-    if (total % 2 !== 0) { 
+
+    if (total % 2 !== 0) {
       while (true) {
         const r = Math.floor(startNode / cols);
         const c = startNode % cols;
-        if ((r + c) % 2 === 0) break; 
+        if ((r + c) % 2 === 0) break;
         startNode = Math.floor(Math.random() * total);
       }
     }
@@ -293,10 +294,10 @@ export class GameEngine {
     const r = Math.floor(index / cols);
     const c = index % cols;
     const n = [];
-    if (r > 0) n.push(index - cols); 
-    if (r < cols - 1) n.push(index + cols); 
-    if (c > 0) n.push(index - 1); 
-    if (c < cols - 1) n.push(index + 1); 
+    if (r > 0) n.push(index - cols);
+    if (r < cols - 1) n.push(index + cols);
+    if (c > 0) n.push(index - 1);
+    if (c < cols - 1) n.push(index + 1);
     return n;
   }
 }
