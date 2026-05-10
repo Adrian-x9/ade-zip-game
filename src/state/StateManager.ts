@@ -17,11 +17,11 @@ private getDefaultState(): GameState {
       puzzle: [],
       path: [],
       time: 0,
-      // Inicjalizacja zasobów taktycznych
       lives: 3,
       savesLeft: 3,
       loadsLeft: 3,
-      savedSnapshot: null
+      savedSnapshot: null,
+      lang: 'EN' // <--- Domyślny język bazowy
     };
   }
 
@@ -65,7 +65,6 @@ private getDefaultState(): GameState {
   }
   
 public resetCurrentGame(): void {
-    // Twardy reset całej sesji (np. po Game Over lub kliknięciu New Game)
     this.updateState({ 
       score: 0, 
       status: 'IDLE', 
@@ -74,6 +73,7 @@ public resetCurrentGame(): void {
       savesLeft: 3,
       loadsLeft: 3,
       savedSnapshot: null
+      // lang pozostaje bez zmian!
     });
   }
 }

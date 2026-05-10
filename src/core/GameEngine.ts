@@ -27,6 +27,15 @@ export class GameEngine {
       return;
     }
 
+    if (action === 'CHANGE_LANG') {
+      const langs: ('EN' | 'PL' | 'DE')[] = ['EN', 'PL', 'DE'];
+      const nextIndex = (langs.indexOf(currentState.lang) + 1) % langs.length;
+      
+      this.stateManager.updateState({ lang: langs[nextIndex] });
+      this.uiController.render(this.stateManager.getState());
+      return;
+    }
+
     if (action === 'START_GAME') {
       this.startGame();
       return;

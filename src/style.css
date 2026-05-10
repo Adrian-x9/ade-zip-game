@@ -239,3 +239,12 @@ body {
 .path-svg {
   mix-blend-mode: normal; /* Poprawka czytelności na białym tle */
 }
+
+.stat-item.justify-right {
+  justify-content: flex-end;
+}
+
+/* Opcjonalne wyróżnienie przycisku języka */
+.lang-btn {
+  color: var(--cell-active);
+}

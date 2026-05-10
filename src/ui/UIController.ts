@@ -1,4 +1,47 @@
-import { GameState } from '../types';
+import { GameState, Language } from '../types';
+
+// Zoptymalizowany słownik (krótkie słowa, dopasowane do mobile)
+const TRANSLATIONS: Record<Language, Record<string, string>> = {
+  EN: {
+    save: "Save",
+    load: "Load",
+    new: "New Game",
+    lives: "LIVES",
+    time: "TIME",
+    best: "BEST",
+    start: "Start Game",
+    next: "Next Level",
+    try: "Try Again",
+    level: "Level",
+    reset: "Reset"
+  },
+  PL: {
+    save: "Zapisz",
+    load: "Wczytaj",
+    new: "Nowa Gra",
+    lives: "ŻYCIA",
+    time: "CZAS",
+    best: "REKORD",
+    start: "Start",
+    next: "Następny",
+    try: "Od nowa",
+    level: "Poziom",
+    reset: "Reset"
+  },
+  DE: {
+    save: "Speichern",
+    load: "Laden",
+    new: "Neues Spiel",
+    lives: "LEBEN",
+    time: "ZEIT",
+    best: "REKORD",
+    start: "Starten",
+    next: "Nächstes",
+    try: "Nochmal",
+    level: "Level",
+    reset: "Reset"
+  }
+};
 
 export class UIController {
   private appContainer: HTMLElement;
@@ -15,22 +58,24 @@ export class UIController {
   }
 
   public init(): void {
+    // translate="no" całkowicie blokuje niszczycielskie zapędy auto-translatorów OS
     this.appContainer.innerHTML = `
-      <div class="game-wrapper">
+      <div class="game-wrapper" translate="no">
         <nav class="top-nav">
-          <button id="btn-save" class="btn-micro">Save ***</button>
-          <button id="btn-load" class="btn-micro">Load ***</button>
-          <button id="btn-new" class="btn-micro">New Game</button>
+          <button id="btn-save" class="btn-micro"></button>
+          <button id="btn-load" class="btn-micro"></button>
+          <button id="btn-new" class="btn-micro"></button>
+          <button id="btn-lang" class="btn-micro lang-btn"></button>
         </nav>
 
         <header class="game-header">
           <div class="stats-group">
-            <div class="stat-item">LIVES <span id="lives-val">♥♥♥</span></div>
-            <div class="stat-item">TIME <span id="timer-val">0s</span></div>
+            <div class="stat-item"><span id="lbl-lives"></span> <span id="lives-val">♥♥♥</span></div>
+            <div class="stat-item"><span id="lbl-time"></span> <span id="timer-val">0 s</span></div>
           </div>
           <div class="score-display">
             <div id="score-val">0</div>
-            <small>BEST: <span id="best-val">0</span></small>
+            <div class="stat-item justify-right"><span id="lbl-best"></span> <span id="best-val">0</span></div>
           </div>
         </header>
         
@@ -40,8 +85,8 @@ export class UIController {
         </div>
 
         <footer class="game-controls">
-          <button id="btn-start" class="btn-primary">Start Game</button>
-          <button id="btn-reset" class="btn-outline" disabled>Reset</button>
+          <button id="btn-start" class="btn-primary"></button>
+          <button id="btn-reset" class="btn-outline" disabled></button>
         </footer>
       </div>
     `;
@@ -52,30 +97,22 @@ export class UIController {
 
   public updateTimer(time: number): void {
     const timerEl = document.getElementById('timer-val');
-    if (timerEl) timerEl.textContent = `${time}s`;
+    if (timerEl) timerEl.textContent = `${time} s`; // <--- DODANA SPACJA
   }
 
   private bindEvents(): void {
-    const startBtn = document.getElementById('btn-start');
-    startBtn?.addEventListener('click', () => {
-      if (this.onAction) this.onAction('START_GAME');
-    });
+    const trigger = (id: string, action: string) => {
+      document.getElementById(id)?.addEventListener('click', () => {
+        if (this.onAction) this.onAction(action);
+      });
+    };
 
-    const resetBtn = document.getElementById('btn-reset');
-    resetBtn?.addEventListener('click', () => {
-      if (this.onAction) this.onAction('RESET_PATH');
-    });
-
-    // NOWE: Nasłuchiwanie na przyciski z górnego menu
-    document.getElementById('btn-save')?.addEventListener('click', () => {
-      if (this.onAction) this.onAction('TACTICAL_SAVE');
-    });
-    document.getElementById('btn-load')?.addEventListener('click', () => {
-      if (this.onAction) this.onAction('TACTICAL_LOAD');
-    });
-    document.getElementById('btn-new')?.addEventListener('click', () => {
-      if (this.onAction) this.onAction('NEW_GAME');
-    });
+    trigger('btn-start', 'START_GAME');
+    trigger('btn-reset', 'RESET_PATH');
+    trigger('btn-save', 'TACTICAL_SAVE');
+    trigger('btn-load', 'TACTICAL_LOAD');
+    trigger('btn-new', 'NEW_GAME');
+    trigger('btn-lang', 'CHANGE_LANG'); // <--- Nasłuch na zmianę języka
 
     const board = document.getElementById('game-board');
     if (!board) return;
@@ -103,7 +140,6 @@ export class UIController {
 
   private handlePointerMove(e: PointerEvent): void {
     const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement;
-    
     if (target && target.matches('.grid-cell') && this.onAction) {
       const cellId = target.dataset.id;
       if (cellId && cellId !== this.currentDragCellId) {
@@ -114,36 +150,47 @@ export class UIController {
   }
 
   public render(state: Readonly<GameState>): void {
+    const t = TRANSLATIONS[state.lang];
+
+    // --- INTERNACJONALIZACJA (i18n) Etykiet ---
+    const setTxt = (id: string, text: string) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+
+    setTxt('lbl-lives', t.lives);
+    setTxt('lbl-time', t.time);
+    setTxt('lbl-best', t.best);
+    setTxt('btn-new', t.new);
+    setTxt('btn-lang', `🌐 ${state.lang}`);
+
+    // --- AKTUALIZACJA DANYCH ---
     if (this.scoreElement) this.scoreElement.textContent = state.score.toString();
-    
-    const bestEl = document.getElementById('best-val');
-    if (bestEl) bestEl.textContent = state.bestScore.toString();
-    
-    // AKTUALIZACJA WIZUALNA ŻYĆ (np. ♥♥♥)
+    setTxt('best-val', state.bestScore.toString());
+    setTxt('timer-val', `${state.time} s`); // <--- Spacja zsynchronizowana
+
     const livesEl = document.getElementById('lives-val');
     if (livesEl) {
       livesEl.textContent = state.status === 'GAME_OVER' ? '☠️' : '♥'.repeat(state.lives);
     }
 
-    const timerEl = document.getElementById('timer-val');
-    if (timerEl) timerEl.textContent = `${state.time}s`;
-
-    // AKTUALIZACJA GÓRNEGO MENU (Gwiazdki i blokady)
+    // --- MENU TAKTYCZNE ---
     const saveBtn = document.getElementById('btn-save') as HTMLButtonElement;
     const loadBtn = document.getElementById('btn-load') as HTMLButtonElement;
     
     if (saveBtn) {
       const stars = '★'.repeat(state.savesLeft) + '☆'.repeat(3 - state.savesLeft);
-      saveBtn.textContent = `Save ${stars}`;
+      saveBtn.textContent = `${t.save} ${stars}`;
       saveBtn.disabled = state.status !== 'PLAYING' || state.savesLeft <= 0;
     }
 
     if (loadBtn) {
       const stars = '★'.repeat(state.loadsLeft) + '☆'.repeat(3 - state.loadsLeft);
-      loadBtn.textContent = `Load ${stars}`;
+      loadBtn.textContent = `${t.load} ${stars}`;
       loadBtn.disabled = state.status !== 'PLAYING' || !state.savedSnapshot || state.loadsLeft <= 0;
     }
 
+    // --- RENDER PLANSZY ---
     const boardElement = document.getElementById('game-board');
     if (!boardElement) return;
     
@@ -161,19 +208,15 @@ export class UIController {
       }
     }
 
-    // 2. AKTUALIZACJA TREŚCI I KLAS
     const cells = boardElement.children;
     state.puzzle.forEach((cellValue, index) => {
       const cell = cells[index] as HTMLElement;
-      
-      // Czyścimy wszystko co stare
       cell.textContent = '';
       cell.classList.remove('checkpoint', 'active', 'current', 'hole');
 
-      // Obsługa dziur (Błąd #2 i wymaganie level 30+)
       if (cellValue === -1) {
         cell.classList.add('hole');
-        return; // Nie renderujemy nic więcej dla dziury
+        return;
       }
 
       if (cellValue > 0) {
@@ -190,12 +233,10 @@ export class UIController {
       }
     });
 
-    if (state.status === 'WIN') {
-      boardElement.classList.add('win');
-    } else {
-      boardElement.classList.remove('win');
-    }
+    if (state.status === 'WIN') boardElement.classList.add('win');
+    else boardElement.classList.remove('win');
 
+    // --- WEKTOR WĘŻA ---
     const svg = document.getElementById('path-overlay');
     if (svg) {
       svg.innerHTML = ''; 
@@ -220,21 +261,25 @@ export class UIController {
       }
     }
 
+    // --- KONTROLERY STOPKI ---
     const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
     const resetBtn = document.getElementById('btn-reset') as HTMLButtonElement;
     
     if (startBtn) {
       if (state.status === 'WIN') {
-        startBtn.textContent = 'Next Level';
+        startBtn.textContent = t.next;
         startBtn.disabled = false;
       } else if (state.status === 'GAME_OVER') {
-        startBtn.textContent = 'Try Again';
+        startBtn.textContent = t.try;
         startBtn.disabled = false;
       } else {
-        startBtn.textContent = state.status === 'PLAYING' ? `Level ${state.level}` : 'Start Game';
+        startBtn.textContent = state.status === 'PLAYING' ? `${t.level} ${state.level}` : t.start;
         startBtn.disabled = state.status === 'PLAYING';
       }
     }
-    if (resetBtn) resetBtn.disabled = state.status !== 'PLAYING';
+    if (resetBtn) {
+      resetBtn.textContent = t.reset;
+      resetBtn.disabled = state.status !== 'PLAYING';
+    }
   }
 }
