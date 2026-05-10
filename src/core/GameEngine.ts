@@ -46,13 +46,35 @@ export class GameEngine {
       return;
     }
 
-    // --- ZAPIS TAKTYCZNY (SAVE) ---
+    // --- TRYB DEVELOPERA: EASTER EGG (NATYCHMIASTOWE UKOŃCZENIE POZIOMU) ---
+    if (action === 'DEV_NEXT_LEVEL' && currentState.status === 'PLAYING') {
+      const stateUpdate = this.stateManager.getState();
+      const timeBonus = Math.max(0, 100 - stateUpdate.time);
+
+      this.stateManager.updateState({
+        status: 'WIN',
+        score: stateUpdate.score + 100 + (stateUpdate.level * 10) + timeBonus,
+        level: stateUpdate.level + 1
+      });
+
+      if (this.timerInterval) clearInterval(this.timerInterval);
+      this.uiController.render(this.stateManager.getState());
+      return;
+    }
+
+    if (action === 'DEV_RESET_BEST') {
+      this.stateManager.updateState({ bestScore: 0 });
+      this.uiController.render(this.stateManager.getState());
+      return;
+    }
+
+    // --- ZAPIS TAKTYCZNY ---
     if (action === 'TACTICAL_SAVE' && currentState.status === 'PLAYING' && currentState.savesLeft > 0) {
       const snapshot = JSON.stringify({
         path: [...currentState.path],
         time: currentState.time,
-        puzzle: [...currentState.puzzle],  // FIX: puzzle w snapshot żeby load wiedział co przywrócić
-        level: currentState.level
+        puzzle: [...currentState.puzzle],
+        level: currentState.level   // FIX: level w snapshot
       });
 
       this.stateManager.updateState({
@@ -64,7 +86,7 @@ export class GameEngine {
       return;
     }
 
-    // --- ODCZYT TAKTYCZNY (LOAD) ---
+    // --- ODCZYT TAKTYCZNY ---
     if (action === 'TACTICAL_LOAD' && currentState.status === 'PLAYING' && currentState.loadsLeft > 0 && currentState.savedSnapshot) {
       try {
         const parsed = JSON.parse(currentState.savedSnapshot);
@@ -72,8 +94,8 @@ export class GameEngine {
         this.stateManager.updateState({
           path: parsed.path,
           time: parsed.time,
-          puzzle: parsed.puzzle,  // FIX: przywracamy planszę ze snapshotu
-          level: parsed.level,
+          puzzle: parsed.puzzle,
+          level: parsed.level,      // FIX: przywracamy level ze snapshotu
           loadsLeft: currentState.loadsLeft - 1
         });
 
@@ -113,7 +135,7 @@ export class GameEngine {
       if (state.status === 'PLAYING') {
         const newTime = state.time + 1;
         this.stateManager.updateState({ time: newTime });
-        this.uiController.updateTimer(newTime);  // FIX: przekazujemy nową wartość, nie starą
+        this.uiController.updateTimer(newTime); // FIX: nowa wartość, nie stara
       } else {
         if (this.timerInterval) clearInterval(this.timerInterval);
       }
@@ -134,7 +156,7 @@ export class GameEngine {
       score: isNewGame ? 0 : state.score,
       level: currentLevel,
       time: 0,
-      // FIX: Try Again resetuje życia i tokeny; savedSnapshot celowo NIE jest tu kasowany
+      // FIX: Try Again resetuje życia i tokeny; savedSnapshot celowo NIE jest kasowany
       ...(isNewGame ? { lives: 3, savesLeft: 3, loadsLeft: 3 } : {})
     });
 
@@ -146,7 +168,8 @@ export class GameEngine {
     const state = this.stateManager.getState();
     const { puzzle, path } = state;
 
-    if (puzzle[cellId] === -1) return;
+    // -1 = dziura, -2 = ściana – oba blokują ruch
+    if (puzzle[cellId] === -1 || puzzle[cellId] === -2) return;
 
     if (path.length === 0) {
       if (puzzle[cellId] === 1) {
@@ -166,7 +189,7 @@ export class GameEngine {
     const expectedNext = this.getNextExpectedNumber(puzzle, path);
 
     if (puzzle[cellId] === maxTarget) {
-      const playableCells = puzzle.filter(v => v !== -1).length;
+      const playableCells = puzzle.filter(v => v !== -1 && v !== -2).length;
       if (path.length + 1 !== playableCells) return;
     }
 
@@ -175,7 +198,7 @@ export class GameEngine {
     const newPath = [...path, cellId];
     this.stateManager.updateState({ path: newPath });
 
-    const totalPlayable = puzzle.filter(v => v !== -1).length;
+    const totalPlayable = puzzle.filter(v => v !== -1 && v !== -2).length;
     if (newPath.length === totalPlayable) {
       const stateUpdate = this.stateManager.getState();
       const timeBonus = Math.max(0, 100 - stateUpdate.time);
@@ -208,28 +231,56 @@ export class GameEngine {
     return currentMax + 1;
   }
 
+  // ---------------------------------------------------------------------------
+  // GENEROWANIE POZIOMU
+  // ---------------------------------------------------------------------------
+
   private generateLevel(level: number): number[] {
     const cols = level <= 5 ? 4 : (level <= 11 ? 5 : 6);
     const total = cols * cols;
     const checkpointsCount = Math.min(3 + Math.floor(level / 2), cols === 6 ? 10 : 8);
 
-    const path = this.generateHamiltonianPath(cols);
-    const grid = Array(total).fill(0);
+    // HARDCORE: ściany od poziomu 18
+    // Co 2 poziomy +1 ściana, max 6 na siatce 6x6
+    const wallCount = level < 18 ? 0 : Math.min(Math.floor((level - 18) / 2) + 1, 6);
 
-    let startIndex = 0;
-    let endIndex = total - 1;
-    let playablePath = path;
+    let path: number[] = [];
+    let walls = new Set<number>();
 
-    if (level >= 30) {
-      grid[path[0]] = -1;
-      grid[path[total - 1]] = -1;
-      playablePath = path.slice(1, total - 1);
-      startIndex = 0;
-      endIndex = playablePath.length - 1;
+    // Retry: losujemy ściany i sprawdzamy czy DFS znajdzie ścieżkę Hamiltona
+    for (let attempt = 0; attempt < 12; attempt++) {
+      const candidate = this.pickWalls(cols, wallCount);
+      const candidatePath = this.generateHamiltonianPath(cols, candidate);
+      if (candidatePath.length === total - candidate.size) {
+        walls = candidate;
+        path = candidatePath;
+        break;
+      }
     }
 
-    grid[playablePath[startIndex]] = 1;
-    grid[playablePath[endIndex]] = checkpointsCount;
+    // Fallback bez ścian
+    if (path.length === 0) {
+      path = this.generateHamiltonianPath(cols, new Set());
+    }
+
+    const grid = Array(total).fill(0);
+
+    // Oznacz ściany jako -2
+    for (const w of walls) {
+      grid[w] = -2;
+    }
+
+    // Dziury: od poziomu 30 odcinamy krańce ścieżki
+    // FIX: path.length - 1 zamiast total - 1 (błąd w oryginalnym kodzie)
+    let playablePath = path;
+    if (level >= 30) {
+      grid[path[0]] = -1;
+      grid[path[path.length - 1]] = -1;
+      playablePath = path.slice(1, path.length - 1);
+    }
+
+    grid[playablePath[0]] = 1;
+    grid[playablePath[playablePath.length - 1]] = checkpointsCount;
 
     const step = Math.floor(playablePath.length / (checkpointsCount - 1));
     for (let i = 2; i < checkpointsCount; i++) {
@@ -239,26 +290,57 @@ export class GameEngine {
     return grid;
   }
 
-  private generateHamiltonianPath(cols: number): number[] {
+  // Losuje N pozycji ścian z dwoma regułami:
+  // 1. Nie w narożnikach (krytyczne węzły grafu)
+  // 2. Nie sąsiadujące ze sobą (zmniejsza ryzyko rozspójnienia grafu)
+  private pickWalls(cols: number, count: number): Set<number> {
     const total = cols * cols;
+    const walls = new Set<number>();
+    let tries = 0;
+
+    while (walls.size < count && tries < 200) {
+      tries++;
+      const candidate = Math.floor(Math.random() * total);
+      const r = Math.floor(candidate / cols);
+      const c = candidate % cols;
+
+      // Pomijamy narożniki
+      if ((r === 0 || r === cols - 1) && (c === 0 || c === cols - 1)) continue;
+
+      // Nie stawiamy dwóch ścian obok siebie
+      if (this.getNeighbors(candidate, cols).some(n => walls.has(n))) continue;
+
+      walls.add(candidate);
+    }
+
+    return walls;
+  }
+
+  // ---------------------------------------------------------------------------
+  // ŚCIEŻKA HAMILTONA (obsługuje zbiór zakazanych komórek = ściany)
+  // ---------------------------------------------------------------------------
+
+  private generateHamiltonianPath(cols: number, forbidden: Set<number> = new Set()): number[] {
+    const total = cols * cols;
+    const playable = total - forbidden.size;
     let finalPath: number[] = [];
 
     const countUnvisitedNeighbors = (node: number, visited: Set<number>): number => {
       let count = 0;
       for (const n of this.getNeighbors(node, cols)) {
-        if (!visited.has(n)) count++;
+        if (!visited.has(n) && !forbidden.has(n)) count++;
       }
       return count;
     };
 
     const dfs = (curr: number, currentPath: number[], visited: Set<number>): boolean => {
-      if (currentPath.length === total) {
+      if (currentPath.length === playable) {
         finalPath = [...currentPath];
         return true;
       }
 
       const neighbors = this.getNeighbors(curr, cols)
-        .filter(n => !visited.has(n))
+        .filter(n => !visited.has(n) && !forbidden.has(n))
         .map(n => ({ id: n, weight: countUnvisitedNeighbors(n, visited) }))
         .sort((a, b) => {
           if (a.weight === b.weight) return Math.random() - 0.5;
@@ -275,14 +357,22 @@ export class GameEngine {
       return false;
     };
 
-    let startNode = Math.floor(Math.random() * total);
+    // Losowy start z pominięciem ścian
+    let startNode: number;
+    let startAttempts = 0;
+    do {
+      startNode = Math.floor(Math.random() * total);
+      startAttempts++;
+    } while (forbidden.has(startNode) && startAttempts < 100);
 
-    if (total % 2 !== 0) {
-      while (true) {
+    if (playable % 2 !== 0) {
+      let parityAttempts = 0;
+      while (parityAttempts < 100) {
         const r = Math.floor(startNode / cols);
         const c = startNode % cols;
-        if ((r + c) % 2 === 0) break;
+        if ((r + c) % 2 === 0 && !forbidden.has(startNode)) break;
         startNode = Math.floor(Math.random() * total);
+        parityAttempts++;
       }
     }
 
