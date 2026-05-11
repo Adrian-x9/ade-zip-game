@@ -8,6 +8,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     new: "New Game",
     lives: "LIVES",
     time: "TIME",
+    totalTime: "TOTAL TIME", // NOWE
     best: "BEST",
     maxLvl: "MAX LVL",
     start: "Start Game",
@@ -28,6 +29,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     new: "Nowa Gra",
     lives: "ŻYCIA",
     time: "CZAS",
+    totalTime: "CZAS GRY", // NOWE: Zgodnie z Twoją propozycją
     best: "REKORD",
     maxLvl: "MAX LVL",
     start: "Start",
@@ -48,6 +50,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     new: "Neues Spiel",
     lives: "LEBEN",
     time: "ZEIT",
+    totalTime: "GESAMTZEIT", // NOWE
     best: "REKORD",
     maxLvl: "MAX LVL",
     start: "Starten",
@@ -95,6 +98,7 @@ export class UIController {
           <div class="stats-group" id="lives-display-wrapper" style="cursor:pointer">
             <div class="stat-item"><span id="lbl-lives"></span> <span id="lives-val">♥♥♥</span></div>
             <div class="stat-item"><span id="lbl-time"></span> <span id="timer-val">0 s</span></div>
+            <div class="stat-item"><span id="lbl-total-time"></span> <span id="total-timer-val">0 s</span></div>
           </div>
           <div class="score-display" id="score-display-wrapper" style="cursor:pointer">
             <div id="score-val">0</div>
@@ -131,9 +135,15 @@ export class UIController {
     this.bindEvents();
   }
 
-  public updateTimer(time: number): void {
+  // Zmodyfikowana metoda aktualizująca oba czasy jednocześnie w locie
+  public updateTimer(time: number, totalTime?: number): void {
     const timerEl = document.getElementById('timer-val');
     if (timerEl) timerEl.textContent = `${time} s`;
+
+    if (totalTime !== undefined) {
+      const totalTimerEl = document.getElementById('total-timer-val');
+      if (totalTimerEl) totalTimerEl.textContent = `${totalTime} s`;
+    }
   }
 
   public showLoading(lang: Language): void {
@@ -264,7 +274,7 @@ export class UIController {
       DE: {
         title: "Wie man ZIP spielt?",
         steps: [
-          "🖱️ <b>Bewegung:</b> Klicken oder ziehen, um den Pfad zu zeichnen.",
+          "🖱️ <b>Bewegung:</b> Klicken oder ziehen, build den Pfad zu zeichnen.",
           "🔢 <b>Ziel:</b> Verbinde alle Kacheln in der richtigen Reihenfolge.",
           "❤️ <b>Leben:</b> Du hast 3 Leben. Eine Sackgasse kostet ein Herz.",
           "⭐ <b>Speichern:</b> Nutze die Sterne weise – nur 3 Ladungen verfügbar."
@@ -308,8 +318,9 @@ export class UIController {
 
     setTxt('lbl-lives', t.lives);
     setTxt('lbl-time', t.time);
+    setTxt('lbl-total-time', t.totalTime); // Wstrzyknięcie nowej etykiety
     setTxt('lbl-best', t.best);
-    setTxt('lbl-max-lvl', t.maxLvl); // Wstrzyknięcie etykiety "MAX LVL"
+    setTxt('lbl-max-lvl', t.maxLvl);
     setTxt('btn-new', t.new);
     setTxt('btn-info', `ℹ️ ${t.info}`);
     setTxt('btn-lang', `🌐 ${state.lang}`);
@@ -321,9 +332,9 @@ export class UIController {
 
     if (this.scoreElement) this.scoreElement.textContent = state.score.toString();
     setTxt('best-val', state.bestScore.toString());
-    // Wstrzyknięcie wartości "bestLevel" (z fallbackiem do 1, jeśli parametr jeszcze nie istnieje w starym stanie)
     setTxt('max-lvl-val', (state.bestLevel || 1).toString()); 
     setTxt('timer-val', `${state.time} s`);
+    setTxt('total-timer-val', `${state.totalTime || 0} s`); // Wstrzyknięcie wartości całkowitego czasu
 
     const livesEl = document.getElementById('lives-val');
     if (livesEl) livesEl.textContent = state.status === 'GAME_OVER' ? '☠️' : '♥'.repeat(state.lives);

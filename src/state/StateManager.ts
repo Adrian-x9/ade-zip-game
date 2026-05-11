@@ -1,7 +1,7 @@
 import { GameState } from '../types';
 
 export class StateManager {
-  // NOWY KLUCZ: Wymusza bezobsługowy reset u wszystkich dotychczasowych graczy
+  // KLUCZ PAMIĘCI: Bezobsługowy reset u wszystkich dotychczasowych graczy
   private readonly STORAGE_KEY = 'zip_game_save_v1_1';
   private state: GameState;
 
@@ -28,6 +28,7 @@ export class StateManager {
       puzzle: [],
       path: [],
       time: 0,
+      totalTime: 0, // NOWE: Domyślny całkowity czas sesji
       lives: 3,
       savesLeft: 3,
       loadsLeft: 3,
@@ -97,7 +98,9 @@ export class StateManager {
       lives: 3,
       savesLeft: 3,
       loadsLeft: 3,
-      savedSnapshot: null
+      savedSnapshot: null,
+      time: 0,
+      totalTime: 0 // Reset całkowitego czasu przy uruchomieniu nowej gry
     });
   }
 }

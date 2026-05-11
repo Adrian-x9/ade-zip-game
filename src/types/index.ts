@@ -9,7 +9,8 @@ export interface GameState {
   status: GameStatus;
   puzzle: number[];
   path: number[];
-  time: number; // Czas w sekundach
+  time: number;       // Czas bieżącego poziomu w sekundach
+  totalTime: number;  // NOWE: Całkowity czas gry w bieżącej sesji w sekundach
   // --- NOWA EKONOMIA SURVIVALOWA ---
   lives: number;      // Liczba żyć (domyślnie 3)
   savesLeft: number;  // Gwiazdki zapisu (domyślnie 3)

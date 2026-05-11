@@ -1,6 +1,5 @@
 import { StateManager } from '../state/StateManager';
 import { UIController } from '../ui/UIController';
-// Usunięto nieużywany import Language, aby tsc nie zgłaszał błędu TS6133
 
 export class GameEngine {
   private stateManager: StateManager;
@@ -55,9 +54,9 @@ export class GameEngine {
       const nextLvl = s.level + 1;
       this.stateManager.updateState({
         status: 'WIN',
-        score: s.score, // 0 punktów za pomyślne użycie cheata/pominięcia
+        score: s.score,
         level: nextLvl,
-        bestLevel: Math.max(s.bestLevel || 1, nextLvl) // Aktualizacja rekordu poziomu
+        bestLevel: Math.max(s.bestLevel || 1, nextLvl)
       });
       this.uiController.render(this.stateManager.getState());
       return;
@@ -74,6 +73,7 @@ export class GameEngine {
       const snapshot = JSON.stringify({
         path: [...currentState.path],
         time: currentState.time,
+        totalTime: currentState.totalTime, // Bezpieczny zapis całkowitego czasu
         puzzle: [...currentState.puzzle],
         level: currentState.level,
         savesLeft: currentState.savesLeft,
@@ -91,6 +91,7 @@ export class GameEngine {
         this.stateManager.updateState({
           path: parsed.path,
           time: parsed.time,
+          totalTime: parsed.totalTime ?? currentState.totalTime, // Przywrócenie całkowitego czasu
           puzzle: parsed.puzzle,
           level: parsed.level,
           savesLeft: parsed.savesLeft ?? currentState.savesLeft,
@@ -110,6 +111,7 @@ export class GameEngine {
         if (this.timerInterval) clearInterval(this.timerInterval);
         this.stateManager.updateState({ status: 'GAME_OVER', lives: 0 });
       } else {
+        // Resetujemy TYLKO czas poziomu (time: 0), całkowity czas gry biegnie dalej niezłomnie!
         this.stateManager.updateState({ path: [], lives: remainingLives, time: 0 });
         this.startTimer();
       }
@@ -129,8 +131,10 @@ export class GameEngine {
       const state = this.stateManager.getState();
       if (state.status === 'PLAYING') {
         const newTime = state.time + 1;
-        this.stateManager.updateState({ time: newTime });
-        this.uiController.updateTimer(newTime);
+        const newTotalTime = state.totalTime + 1;
+        // Podbijamy w locie oba wskaźniki
+        this.stateManager.updateState({ time: newTime, totalTime: newTotalTime });
+        this.uiController.updateTimer(newTime, newTotalTime);
       } else {
         if (this.timerInterval) clearInterval(this.timerInterval);
       }
@@ -154,7 +158,8 @@ export class GameEngine {
         score: isNewGame ? 0 : state.score,
         level: currentLevel,
         time: 0,
-        ...(isNewGame ? { lives: 3, savesLeft: 3, loadsLeft: 3 } : {})
+        // Jeśli to nowa, czysta sesja, twardo resetujemy całkowity czas do 0
+        ...(isNewGame ? { lives: 3, savesLeft: 3, loadsLeft: 3, totalTime: 0 } : {})
       });
 
       this.uiController.render(this.stateManager.getState());
@@ -205,7 +210,7 @@ export class GameEngine {
         status: 'WIN',
         score: stateUpdate.score + 100 + (stateUpdate.level * 10) + timeBonus,
         level: nextLvl,
-        bestLevel: Math.max(stateUpdate.bestLevel || 1, nextLvl) // Aktualizacja rekordu poziomu po wygranej
+        bestLevel: Math.max(stateUpdate.bestLevel || 1, nextLvl)
       });
       if (this.timerInterval) clearInterval(this.timerInterval);
     }
@@ -230,7 +235,7 @@ export class GameEngine {
   }
 
   // ---------------------------------------------------------------------------
-  // GENEROWANIE POZIOMU (Oryginalna, nienaruszona logika dewelopera)
+  // GENEROWANIE POZIOMU
   // ---------------------------------------------------------------------------
 
   private generateLevel(level: number): number[] {
