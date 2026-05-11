@@ -9,6 +9,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     lives: "LIVES",
     time: "TIME",
     best: "BEST",
+    maxLvl: "MAX LVL",
     start: "Start Game",
     next: "Next Level",
     try: "Try Again",
@@ -17,7 +18,8 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     dark: "Dark",
     light: "Light",
     infoTitle: "Instructions",
-    inst: "Connect all available grid cells in a continuous path from 1 to the highest number, filling the entire board."
+    inst: "Connect all available grid cells in a continuous path from 1 to the highest number, filling the entire board.",
+    generating: "Building level…"
   },
   PL: {
     save: "Zapisz",
@@ -27,6 +29,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     lives: "ŻYCIA",
     time: "CZAS",
     best: "REKORD",
+    maxLvl: "MAX LVL",
     start: "Start",
     next: "Następny",
     try: "Od nowa",
@@ -35,7 +38,8 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     dark: "Ciemny",
     light: "Jasny",
     infoTitle: "Instrukcja",
-    inst: "Połącz wszystkie kafelki w ciągłą ścieżkę od 1 do najwyższego numeru, wypełniając przy tym całą planszę."
+    inst: "Połącz wszystkie kafelki w ciągłą ścieżkę od 1 do najwyższego numeru, wypełniając przy tym całą planszę.",
+    generating: "Generuję poziom…"
   },
   DE: {
     save: "Speichern",
@@ -45,6 +49,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     lives: "LEBEN",
     time: "ZEIT",
     best: "REKORD",
+    maxLvl: "MAX LVL",
     start: "Starten",
     next: "Nächstes",
     try: "Nochmal",
@@ -53,7 +58,8 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     dark: "Dunkel",
     light: "Hell",
     infoTitle: "Anleitung",
-    inst: "Verbinden Sie alle verfügbaren Felder in einem durchgehenden Pfad von 1 bis zur höchsten Nummer und füllen Sie dabei das gesamte Spielfeld aus."
+    inst: "Verbinden Sie alle verfügbaren Felder in einem durchgehenden Pfad von 1 bis zur höchsten Nummer und füllen Sie dabei das gesamte Spielfeld aus.",
+    generating: "Level wird erstellt…"
   }
 };
 
@@ -86,19 +92,25 @@ export class UIController {
         </nav>
 
         <header class="game-header">
-          <div class="stats-group" id="lives-display-wrapper" style="cursor: pointer;">
+          <div class="stats-group" id="lives-display-wrapper" style="cursor:pointer">
             <div class="stat-item"><span id="lbl-lives"></span> <span id="lives-val">♥♥♥</span></div>
             <div class="stat-item"><span id="lbl-time"></span> <span id="timer-val">0 s</span></div>
           </div>
-          <div class="score-display" id="score-display-wrapper">
+          <div class="score-display" id="score-display-wrapper" style="cursor:pointer">
             <div id="score-val">0</div>
             <div class="stat-item justify-right"><span id="lbl-best"></span> <span id="best-val">0</span></div>
+            <div class="stat-item justify-right"><span id="lbl-max-lvl"></span> <span id="max-lvl-val">1</span></div>
           </div>
         </header>
 
         <div class="board-container">
           <div id="game-board" class="game-grid"></div>
           <svg id="path-overlay" class="path-svg"></svg>
+
+          <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="loading-spinner"></div>
+            <div id="loading-text" class="loading-text"></div>
+          </div>
         </div>
 
         <footer class="game-controls">
@@ -108,13 +120,7 @@ export class UIController {
 
         <div id="info-modal" class="modal-overlay hidden">
           <div class="modal-content">
-            <h3 id="info-title"></h3>
-            <p id="info-inst"></p>
-            <hr class="modal-hr" />
-            <div class="author-info">
-              ade ZIP game by Adrian Ulbrych<br/>
-              v1.0 &copy; 2026-05-10
-            </div>
+            <div id="dynamic-info-wrapper"></div>
             <button id="btn-close-info" class="btn-close">OK</button>
           </div>
         </div>
@@ -128,6 +134,18 @@ export class UIController {
   public updateTimer(time: number): void {
     const timerEl = document.getElementById('timer-val');
     if (timerEl) timerEl.textContent = `${time} s`;
+  }
+
+  public showLoading(lang: Language): void {
+    const t = TRANSLATIONS[lang];
+    const overlay = document.getElementById('loading-overlay');
+    const text = document.getElementById('loading-text');
+    if (text) text.textContent = t.generating;
+    if (overlay) overlay.classList.remove('hidden');
+  }
+
+  private hideLoading(): void {
+    document.getElementById('loading-overlay')?.classList.add('hidden');
   }
 
   private bindEvents(): void {
@@ -156,33 +174,31 @@ export class UIController {
       document.getElementById('info-modal')?.classList.add('hidden');
     });
 
-    // EASTER EGG 1: SCORE DOUBLE CLICK (DEV WIN)
-    let scoreTapCount = 0;
-    let scoreTapTimer: any = null;
+    let scoreTaps = 0;
+    let scoreTapTimer: ReturnType<typeof setTimeout> | null = null;
     document.getElementById('score-display-wrapper')?.addEventListener('click', () => {
-      scoreTapCount++;
-      if (scoreTapCount === 2) {
-        scoreTapCount = 0;
-        clearTimeout(scoreTapTimer);
+      scoreTaps++;
+      if (scoreTaps === 2) {
+        scoreTaps = 0;
+        if (scoreTapTimer) clearTimeout(scoreTapTimer);
         if (this.onAction) this.onAction('DEV_NEXT_LEVEL');
       } else {
-        clearTimeout(scoreTapTimer);
-        scoreTapTimer = setTimeout(() => { scoreTapCount = 0; }, 400);
+        if (scoreTapTimer) clearTimeout(scoreTapTimer);
+        scoreTapTimer = setTimeout(() => { scoreTaps = 0; }, 400);
       }
     });
 
-    // EASTER EGG 2: LIVES DOUBLE CLICK (RESET BEST SCORE)
-    let livesTapCount = 0;
-    let livesTapTimer: any = null;
+    let livesTaps = 0;
+    let livesTapTimer: ReturnType<typeof setTimeout> | null = null;
     document.getElementById('lives-display-wrapper')?.addEventListener('click', () => {
-      livesTapCount++;
-      if (livesTapCount === 2) {
-        livesTapCount = 0;
-        clearTimeout(livesTapTimer);
+      livesTaps++;
+      if (livesTaps === 2) {
+        livesTaps = 0;
+        if (livesTapTimer) clearTimeout(livesTapTimer);
         if (this.onAction) this.onAction('DEV_RESET_BEST');
       } else {
-        clearTimeout(livesTapTimer);
-        livesTapTimer = setTimeout(() => { livesTapCount = 0; }, 400);
+        if (livesTapTimer) clearTimeout(livesTapTimer);
+        livesTapTimer = setTimeout(() => { livesTaps = 0; }, 400);
       }
     });
 
@@ -221,7 +237,62 @@ export class UIController {
     }
   }
 
+  private renderInfoContent(lang: string): string {
+    const content = {
+      PL: {
+        title: "Jak grać w ZIP?",
+        steps: [
+          "🖱️ <b>Ruch:</b> Klikaj lub przeciągaj palcem po kafelkach, aby narysować ścieżkę.",
+          "🔢 <b>Cel:</b> Musisz połączyć wszystkie kafelki, zaliczając checkpointy w kolejności.",
+          "❤️ <b>Życia:</b> Masz tylko 3 serca na całą sesję. Ślepy zaułek kosztuje jedno życie.",
+          "⭐ <b>Zapisy:</b> Używaj gwiazdek mądrze – masz tylko 3 szanse na zapis i odczyt stanu gry."
+        ],
+        author: "ade ZIP game by Adrian Ulbrych",
+        version: "v1.1.0 © 2026-05-11"
+      },
+      EN: {
+        title: "How to play ZIP?",
+        steps: [
+          "🖱️ <b>Movement:</b> Click or drag to draw your path across the grid.",
+          "🔢 <b>Goal:</b> Connect all tiles by hitting checkpoints in numerical order.",
+          "❤️ <b>Lives:</b> You have 3 lives per session. A dead end costs you one heart.",
+          "⭐ <b>Saves:</b> Use stars wisely – only 3 save/load charges available."
+        ],
+        author: "ade ZIP game by Adrian Ulbrych",
+        version: "v1.1.0 © 2026-05-11"
+      },
+      DE: {
+        title: "Wie man ZIP spielt?",
+        steps: [
+          "🖱️ <b>Bewegung:</b> Klicken oder ziehen, um den Pfad zu zeichnen.",
+          "🔢 <b>Ziel:</b> Verbinde alle Kacheln in der richtigen Reihenfolge.",
+          "❤️ <b>Leben:</b> Du hast 3 Leben. Eine Sackgasse kostet ein Herz.",
+          "⭐ <b>Speichern:</b> Nutze die Sterne weise – nur 3 Ladungen verfügbar."
+        ],
+        author: "ade ZIP game by Adrian Ulbrych",
+        version: "v1.1.0 © 11.05.2026"
+      }
+    };
+
+    const t = content[lang as keyof typeof content] || content.EN;
+
+    return `
+      <div class="info-content">
+        <h2>${t.title}</h2>
+        <ul>
+          ${t.steps.map(step => `<li>${step}</li>`).join('')}
+        </ul>
+        <div class="author-info">
+          <span class="author-name">${t.author}</span>
+          <span class="author-meta">${t.version}</span>
+        </div>
+      </div>
+    `;
+  }
+
   public render(state: Readonly<GameState>): void {
+    this.hideLoading();
+
     const t = TRANSLATIONS[state.lang];
 
     if (state.isDarkMode) document.body.classList.add('dark-mode');
@@ -238,14 +309,20 @@ export class UIController {
     setTxt('lbl-lives', t.lives);
     setTxt('lbl-time', t.time);
     setTxt('lbl-best', t.best);
+    setTxt('lbl-max-lvl', t.maxLvl); // Wstrzyknięcie etykiety "MAX LVL"
     setTxt('btn-new', t.new);
-    setTxt('btn-info', t.info);
+    setTxt('btn-info', `ℹ️ ${t.info}`);
     setTxt('btn-lang', `🌐 ${state.lang}`);
-    setTxt('info-title', t.infoTitle);
-    setTxt('info-inst', t.inst);
+
+    const dynamicInfoEl = document.getElementById('dynamic-info-wrapper');
+    if (dynamicInfoEl) {
+      dynamicInfoEl.innerHTML = this.renderInfoContent(state.lang);
+    }
 
     if (this.scoreElement) this.scoreElement.textContent = state.score.toString();
     setTxt('best-val', state.bestScore.toString());
+    // Wstrzyknięcie wartości "bestLevel" (z fallbackiem do 1, jeśli parametr jeszcze nie istnieje w starym stanie)
+    setTxt('max-lvl-val', (state.bestLevel || 1).toString()); 
     setTxt('timer-val', `${state.time} s`);
 
     const livesEl = document.getElementById('lives-val');
@@ -288,14 +365,8 @@ export class UIController {
       cell.textContent = '';
       cell.classList.remove('checkpoint', 'active', 'current', 'hole', 'wall');
 
-      if (cellValue === -1) {
-        cell.classList.add('hole');
-        return;
-      }
-      if (cellValue === -2) {
-        cell.classList.add('wall');
-        return;
-      }
+      if (cellValue === -1) { cell.classList.add('hole'); return; }
+      if (cellValue === -2) { cell.classList.add('wall'); return; }
 
       if (cellValue > 0) {
         cell.textContent = cellValue.toString();
@@ -318,14 +389,15 @@ export class UIController {
       svg.setAttribute('viewBox', `0 0 ${cols * 100} ${cols * 100}`);
       if (state.status === 'WIN') svg.classList.add('win');
       else svg.classList.remove('win');
+
       if (state.path.length > 0) {
         const svgNS = "http://www.w3.org/2000/svg";
         const pathLine = document.createElementNS(svgNS, 'path');
         pathLine.setAttribute('class', 'path-line');
-        const d = state.path.map((id, index) => {
+        const d = state.path.map((id, i) => {
           const cx = (id % cols) * 100 + 50;
           const cy = Math.floor(id / cols) * 100 + 50;
-          return `${index === 0 ? 'M' : 'L'} ${cx} ${cy}`;
+          return `${i === 0 ? 'M' : 'L'} ${cx} ${cy}`;
         }).join(' ');
         pathLine.setAttribute('d', d);
         svg.appendChild(pathLine);
@@ -336,13 +408,9 @@ export class UIController {
     const resetBtn = document.getElementById('btn-reset') as HTMLButtonElement;
 
     if (startBtn) {
-      if (state.status === 'WIN') {
-        startBtn.textContent = t.next;
-        startBtn.disabled = false;
-      } else if (state.status === 'GAME_OVER') {
-        startBtn.textContent = t.try;
-        startBtn.disabled = false;
-      } else {
+      if (state.status === 'WIN') { startBtn.textContent = t.next; startBtn.disabled = false; }
+      else if (state.status === 'GAME_OVER') { startBtn.textContent = t.try; startBtn.disabled = false; }
+      else {
         startBtn.textContent = state.status === 'PLAYING' ? `${t.level} ${state.level}` : t.start;
         startBtn.disabled = state.status === 'PLAYING';
       }

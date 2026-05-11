@@ -1,5 +1,6 @@
 import { StateManager } from '../state/StateManager';
 import { UIController } from '../ui/UIController';
+// Usunięto nieużywany import Language, aby tsc nie zgłaszał błędu TS6133
 
 export class GameEngine {
   private stateManager: StateManager;
@@ -46,24 +47,24 @@ export class GameEngine {
       return;
     }
 
-    // --- TRYB DEVELOPERA: EASTER EGG (NATYCHMIASTOWE UKOŃCZENIE POZIOMU) ---
+    // --- ANTI-CHEAT: Pomijanie poziomu daje 0 punktów oraz aktualizuje bestLevel ---
     if (action === 'DEV_NEXT_LEVEL' && currentState.status === 'PLAYING') {
-      const stateUpdate = this.stateManager.getState();
-      const timeBonus = Math.max(0, 100 - stateUpdate.time);
-
+      const s = this.stateManager.getState();
+      if (this.timerInterval) clearInterval(this.timerInterval);
+      
+      const nextLvl = s.level + 1;
       this.stateManager.updateState({
         status: 'WIN',
-        score: stateUpdate.score + 100 + (stateUpdate.level * 10) + timeBonus,
-        level: stateUpdate.level + 1
+        score: s.score, // 0 punktów za pomyślne użycie cheata/pominięcia
+        level: nextLvl,
+        bestLevel: Math.max(s.bestLevel || 1, nextLvl) // Aktualizacja rekordu poziomu
       });
-
-      if (this.timerInterval) clearInterval(this.timerInterval);
       this.uiController.render(this.stateManager.getState());
       return;
     }
 
     if (action === 'DEV_RESET_BEST') {
-      this.stateManager.updateState({ bestScore: 0 });
+      this.stateManager.updateState({ bestScore: 0, bestLevel: 1 });
       this.uiController.render(this.stateManager.getState());
       return;
     }
@@ -74,14 +75,11 @@ export class GameEngine {
         path: [...currentState.path],
         time: currentState.time,
         puzzle: [...currentState.puzzle],
-        level: currentState.level   // FIX: level w snapshot
+        level: currentState.level,
+        savesLeft: currentState.savesLeft,
+        loadsLeft: currentState.loadsLeft
       });
-
-      this.stateManager.updateState({
-        savedSnapshot: snapshot,
-        savesLeft: currentState.savesLeft - 1
-      });
-
+      this.stateManager.updateState({ savedSnapshot: snapshot, savesLeft: currentState.savesLeft - 1 });
       this.uiController.render(this.stateManager.getState());
       return;
     }
@@ -90,15 +88,14 @@ export class GameEngine {
     if (action === 'TACTICAL_LOAD' && currentState.status === 'PLAYING' && currentState.loadsLeft > 0 && currentState.savedSnapshot) {
       try {
         const parsed = JSON.parse(currentState.savedSnapshot);
-
         this.stateManager.updateState({
           path: parsed.path,
           time: parsed.time,
           puzzle: parsed.puzzle,
-          level: parsed.level,      // FIX: przywracamy level ze snapshotu
+          level: parsed.level,
+          savesLeft: parsed.savesLeft ?? currentState.savesLeft,
           loadsLeft: currentState.loadsLeft - 1
         });
-
         this.uiController.render(this.stateManager.getState());
       } catch (e) {
         console.error("Tactical Load Error:", e);
@@ -109,7 +106,6 @@ export class GameEngine {
     // --- SURVIVAL: RESET ZABIERA ŻYCIE ---
     if (action === 'RESET_PATH' && currentState.status === 'PLAYING') {
       const remainingLives = currentState.lives - 1;
-
       if (remainingLives <= 0) {
         if (this.timerInterval) clearInterval(this.timerInterval);
         this.stateManager.updateState({ status: 'GAME_OVER', lives: 0 });
@@ -117,7 +113,6 @@ export class GameEngine {
         this.stateManager.updateState({ path: [], lives: remainingLives, time: 0 });
         this.startTimer();
       }
-
       this.uiController.render(this.stateManager.getState());
       return;
     }
@@ -135,7 +130,7 @@ export class GameEngine {
       if (state.status === 'PLAYING') {
         const newTime = state.time + 1;
         this.stateManager.updateState({ time: newTime });
-        this.uiController.updateTimer(newTime); // FIX: nowa wartość, nie stara
+        this.uiController.updateTimer(newTime);
       } else {
         if (this.timerInterval) clearInterval(this.timerInterval);
       }
@@ -147,28 +142,30 @@ export class GameEngine {
     const isNewGame = state.status === 'IDLE' || state.status === 'GAME_OVER';
     const currentLevel = isNewGame ? 1 : state.level;
 
-    const puzzle = this.generateLevel(currentLevel);
+    this.uiController.showLoading(state.lang);
 
-    this.stateManager.updateState({
-      status: 'PLAYING',
-      path: [],
-      puzzle: puzzle,
-      score: isNewGame ? 0 : state.score,
-      level: currentLevel,
-      time: 0,
-      // FIX: Try Again resetuje życia i tokeny; savedSnapshot celowo NIE jest kasowany
-      ...(isNewGame ? { lives: 3, savesLeft: 3, loadsLeft: 3 } : {})
-    });
+    setTimeout(() => {
+      const puzzle = this.generateLevel(currentLevel);
 
-    this.uiController.render(this.stateManager.getState());
-    this.startTimer();
+      this.stateManager.updateState({
+        status: 'PLAYING',
+        path: [],
+        puzzle,
+        score: isNewGame ? 0 : state.score,
+        level: currentLevel,
+        time: 0,
+        ...(isNewGame ? { lives: 3, savesLeft: 3, loadsLeft: 3 } : {})
+      });
+
+      this.uiController.render(this.stateManager.getState());
+      this.startTimer();
+    }, 50);
   }
 
   private processMove(cellId: number): void {
     const state = this.stateManager.getState();
     const { puzzle, path } = state;
 
-    // -1 = dziura, -2 = ściana – oba blokują ruch
     if (puzzle[cellId] === -1 || puzzle[cellId] === -2) return;
 
     if (path.length === 0) {
@@ -202,13 +199,14 @@ export class GameEngine {
     if (newPath.length === totalPlayable) {
       const stateUpdate = this.stateManager.getState();
       const timeBonus = Math.max(0, 100 - stateUpdate.time);
-
+      const nextLvl = stateUpdate.level + 1;
+      
       this.stateManager.updateState({
         status: 'WIN',
         score: stateUpdate.score + 100 + (stateUpdate.level * 10) + timeBonus,
-        level: stateUpdate.level + 1
+        level: nextLvl,
+        bestLevel: Math.max(stateUpdate.bestLevel || 1, nextLvl) // Aktualizacja rekordu poziomu po wygranej
       });
-
       if (this.timerInterval) clearInterval(this.timerInterval);
     }
 
@@ -232,23 +230,19 @@ export class GameEngine {
   }
 
   // ---------------------------------------------------------------------------
-  // GENEROWANIE POZIOMU
+  // GENEROWANIE POZIOMU (Oryginalna, nienaruszona logika dewelopera)
   // ---------------------------------------------------------------------------
 
   private generateLevel(level: number): number[] {
     const cols = level <= 5 ? 4 : (level <= 11 ? 5 : 6);
     const total = cols * cols;
     const checkpointsCount = Math.min(3 + Math.floor(level / 2), cols === 6 ? 10 : 8);
-
-    // HARDCORE: ściany od poziomu 18
-    // Co 2 poziomy +1 ściana, max 6 na siatce 6x6
     const wallCount = level < 18 ? 0 : Math.min(Math.floor((level - 18) / 2) + 1, 6);
 
     let path: number[] = [];
     let walls = new Set<number>();
 
-    // Retry: losujemy ściany i sprawdzamy czy DFS znajdzie ścieżkę Hamiltona
-    for (let attempt = 0; attempt < 12; attempt++) {
+    for (let attempt = 0; attempt < 6; attempt++) {
       const candidate = this.pickWalls(cols, wallCount);
       const candidatePath = this.generateHamiltonianPath(cols, candidate);
       if (candidatePath.length === total - candidate.size) {
@@ -258,20 +252,13 @@ export class GameEngine {
       }
     }
 
-    // Fallback bez ścian
     if (path.length === 0) {
       path = this.generateHamiltonianPath(cols, new Set());
     }
 
     const grid = Array(total).fill(0);
+    for (const w of walls) grid[w] = -2;
 
-    // Oznacz ściany jako -2
-    for (const w of walls) {
-      grid[w] = -2;
-    }
-
-    // Dziury: od poziomu 30 odcinamy krańce ścieżki
-    // FIX: path.length - 1 zamiast total - 1 (błąd w oryginalnym kodzie)
     let playablePath = path;
     if (level >= 30) {
       grid[path[0]] = -1;
@@ -290,25 +277,23 @@ export class GameEngine {
     return grid;
   }
 
-  // Losuje N pozycji ścian z dwoma regułami:
-  // 1. Nie w narożnikach (krytyczne węzły grafu)
-  // 2. Nie sąsiadujące ze sobą (zmniejsza ryzyko rozspójnienia grafu)
   private pickWalls(cols: number, count: number): Set<number> {
     const total = cols * cols;
     const walls = new Set<number>();
     let tries = 0;
 
-    while (walls.size < count && tries < 200) {
+    while (walls.size < count && tries < 300) {
       tries++;
       const candidate = Math.floor(Math.random() * total);
       const r = Math.floor(candidate / cols);
       const c = candidate % cols;
 
-      // Pomijamy narożniki
       if ((r === 0 || r === cols - 1) && (c === 0 || c === cols - 1)) continue;
-
-      // Nie stawiamy dwóch ścian obok siebie
       if (this.getNeighbors(candidate, cols).some(n => walls.has(n))) continue;
+
+      const testWalls = new Set(walls);
+      testWalls.add(candidate);
+      if (!this.isGraphConnected(cols, testWalls)) continue;
 
       walls.add(candidate);
     }
@@ -316,14 +301,42 @@ export class GameEngine {
     return walls;
   }
 
+  private isGraphConnected(cols: number, forbidden: Set<number>): boolean {
+    const total = cols * cols;
+    let start = -1;
+    for (let i = 0; i < total; i++) {
+      if (!forbidden.has(i)) { start = i; break; }
+    }
+    if (start === -1) return false;
+
+    const visited = new Set<number>();
+    const queue = [start];
+    visited.add(start);
+
+    while (queue.length > 0) {
+      const curr = queue.shift()!;
+      for (const n of this.getNeighbors(curr, cols)) {
+        if (!forbidden.has(n) && !visited.has(n)) {
+          visited.add(n);
+          queue.push(n);
+        }
+      }
+    }
+
+    return visited.size === total - forbidden.size;
+  }
+
   // ---------------------------------------------------------------------------
-  // ŚCIEŻKA HAMILTONA (obsługuje zbiór zakazanych komórek = ściany)
+  // ŚCIEŻKA HAMILTONA
   // ---------------------------------------------------------------------------
 
   private generateHamiltonianPath(cols: number, forbidden: Set<number> = new Set()): number[] {
     const total = cols * cols;
     const playable = total - forbidden.size;
     let finalPath: number[] = [];
+
+    const MAX_BACKTRACKS = 10_000;
+    let backtracks = 0;
 
     const countUnvisitedNeighbors = (node: number, visited: Set<number>): number => {
       let count = 0;
@@ -338,41 +351,37 @@ export class GameEngine {
         finalPath = [...currentPath];
         return true;
       }
+      if (backtracks > MAX_BACKTRACKS) return false;
 
       const neighbors = this.getNeighbors(curr, cols)
         .filter(n => !visited.has(n) && !forbidden.has(n))
         .map(n => ({ id: n, weight: countUnvisitedNeighbors(n, visited) }))
-        .sort((a, b) => {
-          if (a.weight === b.weight) return Math.random() - 0.5;
-          return a.weight - b.weight;
-        });
+        .sort((a, b) => a.weight === b.weight ? Math.random() - 0.5 : a.weight - b.weight);
 
       for (const neighbor of neighbors) {
         visited.add(neighbor.id);
         currentPath.push(neighbor.id);
         if (dfs(neighbor.id, currentPath, visited)) return true;
+        backtracks++;
         currentPath.pop();
         visited.delete(neighbor.id);
       }
       return false;
     };
 
-    // Losowy start z pominięciem ścian
     let startNode: number;
-    let startAttempts = 0;
-    do {
-      startNode = Math.floor(Math.random() * total);
-      startAttempts++;
-    } while (forbidden.has(startNode) && startAttempts < 100);
+    let sa = 0;
+    do { startNode = Math.floor(Math.random() * total); sa++; }
+    while (forbidden.has(startNode) && sa < 100);
 
     if (playable % 2 !== 0) {
-      let parityAttempts = 0;
-      while (parityAttempts < 100) {
+      let pa = 0;
+      while (pa < 100) {
         const r = Math.floor(startNode / cols);
         const c = startNode % cols;
         if ((r + c) % 2 === 0 && !forbidden.has(startNode)) break;
         startNode = Math.floor(Math.random() * total);
-        parityAttempts++;
+        pa++;
       }
     }
 

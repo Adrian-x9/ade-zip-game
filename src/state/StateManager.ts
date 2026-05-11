@@ -1,7 +1,8 @@
 import { GameState } from '../types';
 
 export class StateManager {
-  private readonly STORAGE_KEY = 'zip_game_save_v1';
+  // NOWY KLUCZ: Wymusza bezobsługowy reset u wszystkich dotychczasowych graczy
+  private readonly STORAGE_KEY = 'zip_game_save_v1_1';
   private state: GameState;
 
   constructor() {
@@ -10,9 +11,18 @@ export class StateManager {
 
   private getDefaultState(): GameState {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    let defaultLang: 'EN' | 'PL' | 'DE' = 'EN';
+    if (typeof navigator !== 'undefined' && navigator.language) {
+      const browserLang = navigator.language.toLowerCase();
+      if (browserLang.startsWith('pl')) defaultLang = 'PL';
+      else if (browserLang.startsWith('de')) defaultLang = 'DE';
+    }
+
     return {
       score: 0,
       bestScore: 0,
+      bestLevel: 1, // Domyślny max poziom
       level: 1,
       status: 'IDLE',
       puzzle: [],
@@ -22,7 +32,7 @@ export class StateManager {
       savesLeft: 3,
       loadsLeft: 3,
       savedSnapshot: null,
-      lang: 'EN',
+      lang: defaultLang,
       isDarkMode: prefersDark
     };
   }
@@ -34,8 +44,12 @@ export class StateManager {
   public updateState(partialState: Partial<GameState>): void {
     this.state = { ...this.state, ...partialState };
 
+    // Aktualizacja rekordów (zarówno punktów, jak i poziomu)
     if (this.state.score > this.state.bestScore) {
       this.state.bestScore = this.state.score;
+    }
+    if (this.state.level > this.state.bestLevel) {
+      this.state.bestLevel = this.state.level;
     }
 
     this.saveState();
@@ -45,6 +59,7 @@ export class StateManager {
     try {
       const saveObj = {
         bestScore: this.state.bestScore,
+        bestLevel: this.state.bestLevel,
         lang: this.state.lang,
         isDarkMode: this.state.isDarkMode
       };
@@ -63,8 +78,8 @@ export class StateManager {
         return {
           ...defaultState,
           bestScore: parsed.bestScore || 0,
+          bestLevel: parsed.bestLevel || 1,
           lang: parsed.lang || defaultState.lang,
-          // ?? zamiast || – false to poprawna wartość, nie fallback
           isDarkMode: parsed.isDarkMode ?? defaultState.isDarkMode
         };
       }
@@ -83,7 +98,6 @@ export class StateManager {
       savesLeft: 3,
       loadsLeft: 3,
       savedSnapshot: null
-      // lang i isDarkMode pozostają bez zmian
     });
   }
 }

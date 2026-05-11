@@ -4,6 +4,7 @@ export type Language = 'EN' | 'PL' | 'DE';
 export interface GameState {
   score: number;
   bestScore: number;
+  bestLevel: number;
   level: number;
   status: GameStatus;
   puzzle: number[];
