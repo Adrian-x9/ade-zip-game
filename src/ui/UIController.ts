@@ -309,7 +309,7 @@ export class UIController {
           ${t.steps.map(step => `<li>${step}</li>`).join('')}
         </ul>
         ${!isStandalone ? `
-          <button id="btn-modal-install" class="btn-primary" style="margin-top: 16px; padding: 12px; font-size: 1rem;">
+          <button id="btn-modal-install" class="btn-primary">
             📲 ${t.btnInstall}
           </button>
         ` : ''}

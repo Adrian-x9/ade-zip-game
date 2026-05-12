@@ -350,6 +350,22 @@ body {
   transform: scale(0.96);
 }
 
+/* --- Wyśrodkowanie przycisku instalacji w Info --- */
+#btn-modal-install {
+  display: block;          /* Pozwala na użycie margin: auto */
+  margin: 20px auto 0 auto; /* Centrowanie w poziomie i odstęp od góry */
+  width: fit-content;      /* Przycisk nie rozciąga się, dopasowuje do tekstu */
+  padding: 12px 24px;      /* Bardziej eleganckie proporcje */
+  font-size: 1rem;
+  border-radius: 25px;     /* Bardziej zaokrąglony kształt */
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+}
+
+/* Efekt naciśnięcia */
+#btn-modal-install:active {
+  transform: scale(0.96);
+}
+
 /* FIX: kompaktowe wnętrze modalu – skrócone fonty i marginesy żeby autor był zawsze widoczny */
 .info-content {
   font-size: 0.92rem;  /* było 1.15rem */
