@@ -184,6 +184,15 @@ export class UIController {
       document.getElementById('info-modal')?.classList.add('hidden');
     });
 
+    document.getElementById('info-modal')?.addEventListener('click', (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && target.closest('#btn-modal-install')) {
+        if (typeof window !== 'undefined' && window.__zipInstall) {
+          window.__zipInstall();
+        }
+      }
+    });
+
     let scoreTaps = 0;
     let scoreTapTimer: ReturnType<typeof setTimeout> | null = null;
     document.getElementById('score-display-wrapper')?.addEventListener('click', () => {
@@ -257,8 +266,9 @@ export class UIController {
           "❤️ <b>Życia:</b> Masz tylko 3 serca na całą sesję. Ślepy zaułek kosztuje jedno życie.",
           "⭐ <b>Zapisy:</b> Używaj gwiazdek mądrze – masz tylko 3 szanse na zapis i odczyt stanu gry."
         ],
+        btnInstall: "Zainstaluj Aplikację",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.1.0 © 2026-05-11"
+        version: "v1.2.0 © 2026-05-11"
       },
       EN: {
         title: "How to play ZIP?",
@@ -268,23 +278,29 @@ export class UIController {
           "❤️ <b>Lives:</b> You have 3 lives per session. A dead end costs you one heart.",
           "⭐ <b>Saves:</b> Use stars wisely – only 3 save/load charges available."
         ],
+        btnInstall: "Install Application",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.1.0 © 2026-05-11"
+        version: "v1.2.0 © 2026-05-11"
       },
       DE: {
         title: "Wie man ZIP spielt?",
         steps: [
-          "🖱️ <b>Bewegung:</b> Klicken oder ziehen, build den Pfad zu zeichnen.",
+          "🖱️ <b>Bewegung:</b> Klicken oder ziehen, um den Pfad zu zeichnen.",
           "🔢 <b>Ziel:</b> Verbinde alle Kacheln in der richtigen Reihenfolge.",
           "❤️ <b>Leben:</b> Du hast 3 Leben. Eine Sackgasse kostet ein Herz.",
           "⭐ <b>Speichern:</b> Nutze die Sterne weise – nur 3 Ladungen verfügbar."
         ],
+        btnInstall: "App installieren",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.1.0 © 11.05.2026"
+        version: "v1.2.0 © 11.05.2026"
       }
     };
 
     const t = content[lang as keyof typeof content] || content.EN;
+    
+    // Sprawdzamy czy aplikacja działa jako zainstalowana, by ewentualnie ukryć przycisk
+    const isStandalone = typeof window !== 'undefined' && 
+      (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true);
 
     return `
       <div class="info-content">
@@ -292,6 +308,11 @@ export class UIController {
         <ul>
           ${t.steps.map(step => `<li>${step}</li>`).join('')}
         </ul>
+        ${!isStandalone ? `
+          <button id="btn-modal-install" class="btn-primary" style="margin-top: 16px; padding: 12px; font-size: 1rem;">
+            📲 ${t.btnInstall}
+          </button>
+        ` : ''}
         <div class="author-info">
           <span class="author-name">${t.author}</span>
           <span class="author-meta">${t.version}</span>

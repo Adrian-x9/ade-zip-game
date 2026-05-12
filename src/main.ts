@@ -118,3 +118,39 @@ function showIOSBanner(banner: HTMLElement, dismiss: () => void): void {
 
   document.getElementById('install-dismiss-btn')?.addEventListener('click', dismiss);
 }
+
+// Dodajemy definicję globalną dla bezpieczeństwa kompilacji TypeScript
+declare global {
+  interface Window {
+    __zipInstall?: () => void;
+  }
+}
+
+// Globalny punkt wejścia do wywołania instalacji na żądanie
+window.__zipInstall = async () => {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') {
+      deferredInstallPrompt = null;
+      // Ukrywamy przycisk w modalu po udanej instalacji
+      const installBtn = document.getElementById('btn-modal-install');
+      if (installBtn) installBtn.style.display = 'none';
+    }
+  } else {
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const lang = (document.getElementById('btn-lang')?.textContent || '').includes('PL') ? 'PL' : 'EN';
+    
+    if (isIOS) {
+      alert(lang === 'PL' 
+        ? "Aby zainstalować na iOS: kliknij ikonę Udostępnij na dole ekranu Safari, a następnie wybierz 'Do ekranu początkowego'."
+        : "To install on iOS: tap the Share icon at the bottom of Safari, then select 'Add to Home Screen'."
+      );
+    } else {
+      alert(lang === 'PL'
+        ? "Aplikacja jest już zainstalowana lub Twoja przeglądarka nie wspiera automatycznej instalacji."
+        : "App is already installed or your browser does not support automatic installation."
+      );
+    }
+  }
+};
