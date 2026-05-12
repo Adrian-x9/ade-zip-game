@@ -119,7 +119,7 @@ body {
 }
 
 #score-val {
-  font-size: 2.2rem; /* minimalnie mniejsze, żeby pomieścić pod spodem dwa rekordy */
+  font-size: 2.2rem;
   font-weight: 800;
   line-height: 1;
   margin-bottom: 2px;
@@ -147,21 +147,23 @@ body {
   height: 100%;
   pointer-events: none;
   z-index: 2;
-  mix-blend-mode: normal;
 }
 
+/* FIX: biały stroke zamiast niebieskiego – doskonały kontrast na niebieskich/zielonych polach */
+/* Poprzedni stroke: var(--cell-active) z mix-blend-mode: multiply = niewidoczna linia na aktywnych polach */
 .path-line {
   fill: none;
-  stroke: var(--cell-active);
+  stroke: rgba(255, 255, 255, 0.80);
   stroke-width: 10;
   stroke-linecap: round;
   stroke-linejoin: round;
   transition: stroke 0.3s ease;
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
 }
 
+/* WIN: biały na zielonym = równie czytelny */
 .path-svg.win .path-line {
-  stroke: var(--cell-success);
+  stroke: rgba(255, 255, 255, 0.80);
 }
 
 /* --- LOADING OVERLAY --- */
@@ -276,6 +278,12 @@ body {
   box-sizing: border-box;
 }
 
+/* FIX: ogólna reguła disabled dla wszystkich przycisków stopki */
+.game-controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 #btn-start {
   background-color: var(--text-main);
   color: #ffffff;
@@ -302,18 +310,23 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 100;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .modal-overlay.hidden {
   display: none;
 }
 
+/* FIX: max-height + scroll zapobiega wypchnięciu autora poza ekran */
 .modal-content {
   background: var(--bg-color);
   color: var(--text-main);
-  width: 90%;
+  width: 100%;
   max-width: 440px;
-  padding: 28px;
+  max-height: 82vh;
+  overflow-y: auto;
+  padding: 24px;
   border-radius: var(--radius-container);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
@@ -330,24 +343,24 @@ body {
   border: none;
   cursor: pointer;
   transition: transform 0.1s ease;
-  margin-top: 15px;
+  margin-top: 16px;
 }
 
 .btn-close:active {
   transform: scale(0.96);
 }
 
-/* --- BOGATE WNĘTRZE MODALU INFO --- */
+/* FIX: kompaktowe wnętrze modalu – skrócone fonty i marginesy żeby autor był zawsze widoczny */
 .info-content {
-  font-size: 1.15rem;
-  line-height: 1.6;
+  font-size: 0.92rem;  /* było 1.15rem */
+  line-height: 1.5;
   text-align: left;
 }
 
 .info-content h2 {
-  font-size: 1.6rem;
+  font-size: 1.3rem;   /* było 1.6rem */
   margin-top: 0;
-  margin-bottom: 16px;
+  margin-bottom: 12px; /* było 16px */
   color: var(--text-main);
   text-align: center;
 }
@@ -359,25 +372,116 @@ body {
 }
 
 .info-content li {
-  margin-bottom: 14px;
+  margin-bottom: 10px; /* było 14px */
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 8px;
   color: var(--text-main);
 }
 
 .info-version {
-  margin-top: 24px;
-  font-size: 0.85rem;
+  margin-top: 16px;
+  font-size: 0.82rem;
   color: var(--text-muted);
+  border-top: 1px solid var(--cell-checkpoint);
+  padding-top: 10px;
+  text-align: center;
+}
+
+/* FIX: bardziej czytelna stopka autora */
+.author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 16px;    /* było 24px */
   border-top: 1px solid var(--cell-checkpoint);
   padding-top: 12px;
   text-align: center;
 }
 
-/* ========================================================= */
+.author-name {
+  font-size: 0.88rem;  /* było 0.9rem – bez zmian */
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.author-meta {
+  font-size: 0.82rem;  /* było 0.75rem – zwiększone dla czytelności */
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* --- INSTALL BANNER (PWA) --- */
+.install-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 48px);
+  max-width: 360px;
+  background: var(--text-main);
+  color: var(--bg-color);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 200;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  animation: bannerSlideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.install-banner.hidden {
+  display: none;
+}
+
+@keyframes bannerSlideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.install-banner-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.install-banner-msg {
+  flex: 1;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.install-banner-btn {
+  background: var(--cell-active);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.install-banner-dismiss {
+  background: transparent;
+  border: none;
+  color: inherit;
+  opacity: 0.55;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px 2px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* ============================================================ */
 /* --- DARK MODE --- */
-/* ========================================================= */
+/* ============================================================ */
 body.dark-mode {
   --bg-color: #1C1C1E;
   --text-main: #F5F5F7;
@@ -410,7 +514,7 @@ body.dark-mode .grid-cell.wall {
 }
 
 body.dark-mode .loading-overlay {
-  background: rgba(28, 28, 30, 0.85);
+  background: rgba(28, 28, 30, 0.92);
 }
 
 body.dark-mode .loading-spinner {
@@ -418,9 +522,9 @@ body.dark-mode .loading-spinner {
   border-top-color: var(--cell-active);
 }
 
+/* Dark mode: biały stroke działa jeszcze lepiej na ciemniejszym niebieskim */
 body.dark-mode .path-line {
-  mix-blend-mode: screen;
-  opacity: 0.8;
+  stroke: rgba(255, 255, 255, 0.85);
 }
 
 body.dark-mode #btn-start {
@@ -432,11 +536,7 @@ body.dark-mode .modal-content {
   background: #2C2C2E;
 }
 
-/* ========================================================= */
-/* 🚨 POPRAWKA P0: KRYTYCZNY KONTRAST PRZYCISKU (WCAG AAA)  */
-/* ========================================================= */
-
-/* Tryb Jasny: jasny kafelek z absolutnie czarnym, ostrym napisem */
+/* P0: kontrast przycisku start gdy disabled */
 #btn-start:disabled {
   background-color: #E5E5EA;
   color: #1D1D1F;
@@ -445,36 +545,10 @@ body.dark-mode .modal-content {
   cursor: default;
 }
 
-/* Tryb Ciemny: mocny grafitowy kafelek z krystalicznie białym napisem */
 body.dark-mode #btn-start:disabled {
   background-color: #3A3A3C;
   color: #FFFFFF;
   border: 1px solid #48484A;
   opacity: 1;
   cursor: default;
-}
-
-/* --- POPRAWIONA STOPKA AUTORSKA (HIERARCHIA I ZGASZENIE) --- */
-.author-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 24px;
-  border-top: 1px solid var(--cell-checkpoint);
-  padding-top: 14px;
-  text-align: center;
-}
-
-.author-name {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--text-main);
-  letter-spacing: -0.01em;
-}
-
-.author-meta {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  opacity: 0.8;
 }
