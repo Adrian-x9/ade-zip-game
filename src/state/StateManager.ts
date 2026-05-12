@@ -103,4 +103,17 @@ export class StateManager {
       totalTime: 0 // Reset całkowitego czasu przy uruchomieniu nowej gry
     });
   }
+
+  public factoryReset(): void {
+    const defaultState = this.getDefaultState();
+    // Nadpisujemy stan, zachowując jedynie obecny język i tryb ciemny
+    this.state = {
+      ...defaultState,
+      lang: this.state.lang,
+      isDarkMode: this.state.isDarkMode
+    };
+    
+    // Twardy reset klucza zapisu w localStorage
+    this.saveState();
+  }
 }

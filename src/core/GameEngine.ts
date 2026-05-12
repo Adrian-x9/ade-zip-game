@@ -63,8 +63,19 @@ export class GameEngine {
     }
 
     if (action === 'DEV_RESET_BEST') {
-      this.stateManager.updateState({ bestScore: 0, bestLevel: 1 });
-      this.uiController.render(this.stateManager.getState());
+      // 1. Zatrzymujemy stary timer
+      if (this.timerInterval) clearInterval(this.timerInterval);
+
+      // 2. Wywołujemy fabryczny reset stanu (statystyki, życia, poziomy, czas idą na 0/1)
+      this.stateManager.factoryReset();
+
+      // 3. Resetujemy i przywracamy dymek instalacyjny przez globalny mostek
+      if (typeof window !== 'undefined' && window.__zipResetBanner) {
+        window.__zipResetBanner();
+      }
+
+      // 4. Inicjalizujemy nową, świeżą planszę dla poziomu 1
+      this.startGame();
       return;
     }
 

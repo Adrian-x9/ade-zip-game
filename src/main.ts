@@ -154,3 +154,29 @@ window.__zipInstall = async () => {
     }
   }
 };
+
+// Rozszerzamy interfejs globalny o nową funkcję
+declare global {
+  interface Window {
+    __zipInstall?: () => void;
+    __zipResetBanner?: () => void; // <--- NOWE
+  }
+}
+
+// ... (tutaj leży Twój dotychczasowy kod window.__zipInstall) ...
+
+// Globalny punkt wejścia do zresetowania i ponownego wyświetlenia baneru
+window.__zipResetBanner = () => {
+  // 1. Usuwamy blokadę z pamięci
+  localStorage.removeItem('install_dismissed');
+  
+  // 2. Jeśli stary, ukryty baner wciąż siedzi w DOM, usuwamy go
+  const oldBanner = document.getElementById('install-banner');
+  if (oldBanner) {
+    oldBanner.remove();
+  }
+  
+  // 3. Inicjalizujemy baner na nowo w locie
+  // (funkcja initInstallBanner z main.ts zweryfikuje standalone i wyświetli dymek)
+  initInstallBanner();
+};

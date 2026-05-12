@@ -1,6 +1,6 @@
 // FIX: wersja cache musi się zmienić przy każdym deploymencie
 // żeby stary SW nie serwował przeterminowanych plików
-const CACHE_NAME = 'zip-game-cache-v1.2.0';
+const CACHE_NAME = 'zip-game-cache-v1.2.1';
 
 // Pliki do pre-cache przy instalacji (statyczne, znane z góry)
 const PRECACHE_ASSETS = [
