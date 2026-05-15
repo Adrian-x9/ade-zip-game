@@ -17,7 +17,6 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #000000; /* Głęboka czerń na zewnątrz wrappera */
   color: var(--text-main);
   font-family: system-ui, -apple-system, sans-serif;
   display: flex;
@@ -85,27 +84,48 @@ body {
 .game-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* Zmiana z center na flex-start dla lepszego wyrównania przy wielu liniach */
   margin-bottom: 24px;
+  gap: 10px; /* Minimalny odstęp między kolumnami */
 }
 
 .stats-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-left: 4px;
+  gap: 4px;
+  flex: 1; /* Pozwala kolumnie zajmować dostępną przestrzeń */
+  min-width: 0; /* Zapobiega wypychaniu kontenera przez długi tekst */
+}
+
+.score-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex: 1;
+  text-align: right;
+  min-width: 0;
 }
 
 .stat-item {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 0.75rem; /* Etykiety mniejsze i subtelne */
+  font-weight: 600;
+  font-size: 0.7rem; /* Nieco mniejszy font dla etykiet (było 0.75rem/0.85rem) */
+  color: var(--text-muted);
+  white-space: nowrap; /* Zapobiega łamaniu etykiety do nowej linii */
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
 }
 
 .stat-item span {
   color: var(--text-main);
   font-size: 1rem;
   margin-left: 4px;
+}
+
+.stat-item span:last-child {
+  font-size: 1rem; /* Utrzymujemy czytelność liczb */
+  color: var(--text-main);
 }
 
 .stat-item.justify-right {
@@ -129,6 +149,17 @@ body {
   font-weight: 800;
   line-height: 1;
   margin-bottom: 2px;
+  color: var(--cell-active); /* <--- Zmiana z domyślnego koloru na niebieski */
+}
+
+/* Zmniejszenie fontu dla rekordów rywalizacji, jeśli są bardzo długie */
+#best-val, #max-lvl-val {
+  font-variant-numeric: tabular-nums; /* Stała szerokość cyfr dla lepszego wyrównania */
+}
+
+/* Jeśli tekst zawiera ukośnik (rywalizacja), zmniejszamy go o 10% dla bezpieczeństwa */
+.stat-item span {
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
 }
 
 /* --- PLANSZA --- */
