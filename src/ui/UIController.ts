@@ -273,7 +273,7 @@ export class UIController {
         ],
         btnInstall: "Zainstaluj Aplikację",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.3.1 © 2026-05-15"
+        version: "v1.3.2 © 2026-05-15"
       },
       EN: {
         title: "How to play ZIP?",
@@ -285,7 +285,7 @@ export class UIController {
         ],
         btnInstall: "Install Application",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.3.1 © 2026-05-15"
+        version: "v1.3.2 © 2026-05-15"
       },
       DE: {
         title: "Wie man ZIP spielt?",
@@ -297,7 +297,7 @@ export class UIController {
         ],
         btnInstall: "App installieren",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.3.1 © 15.05.2026"
+        version: "v1.3.2 © 15.05.2026"
       }
     };
 

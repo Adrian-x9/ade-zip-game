@@ -62,7 +62,8 @@ export class StateManager {
         bestScore: this.state.bestScore,
         bestLevel: this.state.bestLevel,
         lang: this.state.lang,
-        isDarkMode: this.state.isDarkMode
+        isDarkMode: this.state.isDarkMode,
+        rivalTarget: this.state.rivalTarget
       };
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(saveObj));
     } catch (e) {
@@ -81,7 +82,8 @@ export class StateManager {
           bestScore: parsed.bestScore || 0,
           bestLevel: parsed.bestLevel || 1,
           lang: parsed.lang || defaultState.lang,
-          isDarkMode: parsed.isDarkMode ?? defaultState.isDarkMode
+          isDarkMode: parsed.isDarkMode ?? defaultState.isDarkMode,
+          rivalTarget: parsed.rivalTarget || null
         };
       }
     } catch (e) {
