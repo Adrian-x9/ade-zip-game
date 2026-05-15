@@ -1,24 +1,23 @@
 :root {
-  --bg-color: #ffffff;
-  --text-main: #1D1D1F;
-  --text-muted: #6E6E73;
+  --bg-color: #1D1D1F;
+  --text-main: #F5F5F7;
+  --text-muted: #8E8E93;
 
   --grid-gap: 8px;
-  --cell-empty: #F5F5F7;
-  --cell-checkpoint: #E5E5EA;
-  --cell-active: #007AFF;
-  --cell-success: #198754;
-  --cell-wall: #3A3A3C;
+  --cell-empty: #2C2C2E;
+  --cell-checkpoint: #3A3A3C;
+  --cell-active: #0A84FF;
+  --cell-success: #30D158;
+  --cell-wall: #F5F5F7;
 
-  --radius-cell: 12px;
-  --radius-container: 20px;
-  --primary-color: #007AFF;
+  --radius-cell: 14px;
+  --radius-container: 24px;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--bg-color);
+  background-color: #000000; /* Głęboka czerń na zewnątrz wrappera */
   color: var(--text-main);
   font-family: system-ui, -apple-system, sans-serif;
   display: flex;
@@ -27,6 +26,7 @@ body {
   min-height: 100vh;
   user-select: none;
   letter-spacing: -0.02em;
+  background-color: #000000; /* Tło strony pod wrapperem */
 }
 
 #app {
@@ -286,7 +286,15 @@ body {
 
 #btn-start {
   background-color: var(--text-main);
-  color: #ffffff;
+  color: var(--bg-color); /* <--- Zmiana z #ffffff na zmienną tła */
+}
+
+/* Wyraźna etykieta poziomu podczas gry */
+#btn-start:disabled {
+  opacity: 1;
+  background-color: var(--cell-empty);
+  color: var(--text-main);
+  cursor: default;
 }
 
 #btn-reset {
@@ -496,75 +504,72 @@ body {
 }
 
 /* ============================================================ */
-/* --- DARK MODE --- */
+/* --- LIGHT MODE --- */
 /* ============================================================ */
-body.dark-mode {
-  --bg-color: #1C1C1E;
-  --text-main: #F5F5F7;
-  --text-muted: #8E8E93;
-  --cell-empty: #2C2C2E;
-  --cell-checkpoint: #3A3A3C;
-  --cell-active: #0A84FF;
-  --cell-success: #30D158;
-}
-
-body.dark-mode .game-wrapper {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-  background: #1C1C1E;
-}
-
-body.dark-mode .grid-cell.active {
-  box-shadow: 0 4px 12px rgba(10, 132, 255, 0.4);
-}
-
-body.dark-mode .grid-cell.hole {
-  background-color: #1C1C1E;
-  border: 1px solid #3A3A3C;
-  opacity: 0.7;
-}
-
-body.dark-mode .grid-cell.wall {
+body.light-mode {
+  --bg-color: #ffffff;
+  --text-main: #1D1D1F;
+  --text-muted: #6E6E73;
+  --cell-empty: #F5F5F7;
+  --cell-checkpoint: #E5E5EA;
+  --cell-active: #007AFF;
+  --cell-success: #198754;
+  --cell-wall: #3A3A3C;
   background-color: #F5F5F7;
-  opacity: 0.8;
-  box-shadow: 0 0 10px rgba(255,255,255,0.1);
 }
 
-body.dark-mode .loading-overlay {
-  background: rgba(28, 28, 30, 0.92);
+/* --- KOD RYWALIZACYJNY UI --- */
+.control-code-wrapper {
+  margin-top: 20px;
+  padding: 16px;
+  background-color: var(--cell-empty);
+  border-radius: var(--radius-cell);
+  border: 1px solid var(--cell-checkpoint);
+  text-align: center;
+  animation: fadeInOverlay 0.3s ease;
 }
 
-body.dark-mode .loading-spinner {
-  border-color: #3A3A3C;
-  border-top-color: var(--cell-active);
+.control-code-wrapper.hidden {
+  display: none;
 }
 
-/* Dark mode: biały stroke działa jeszcze lepiej na ciemniejszym niebieskim */
-body.dark-mode .path-line {
-  stroke: rgba(255, 255, 255, 0.85);
+.code-info {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-weight: 600;
 }
 
-body.dark-mode #btn-start {
-  background-color: var(--text-main);
-  color: var(--bg-color);
+.code-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-color);
+  padding: 8px 12px;
+  border-radius: 8px;
+  gap: 12px;
 }
 
-body.dark-mode .modal-content {
-  background: #2C2C2E;
+#control-code-val {
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--cell-active);
+  letter-spacing: 1px;
 }
 
-/* P0: kontrast przycisku start gdy disabled */
-#btn-start:disabled {
-  background-color: #E5E5EA;
-  color: #1D1D1F;
-  border: 1px solid #D1D1D6;
-  opacity: 1;
-  cursor: default;
+#btn-copy-code {
+  background-color: var(--cell-empty);
+  color: var(--text-main);
+  border: 1px solid var(--cell-checkpoint);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
-body.dark-mode #btn-start:disabled {
-  background-color: #3A3A3C;
-  color: #FFFFFF;
-  border: 1px solid #48484A;
-  opacity: 1;
-  cursor: default;
+#btn-copy-code:active {
+  background-color: var(--cell-active);
+  color: #fff;
+  transform: scale(0.95);
 }

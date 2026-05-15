@@ -17,125 +17,7 @@ export class GameEngine {
     this.uiController.render(this.stateManager.getState());
   }
 
-  private handleUIAction(action: string): void {
-    const currentState = this.stateManager.getState();
-
-    if (action === 'TOGGLE_DARK_MODE') {
-      this.stateManager.updateState({ isDarkMode: !currentState.isDarkMode });
-      this.uiController.render(this.stateManager.getState());
-      return;
-    }
-
-    if (action === 'NEW_GAME') {
-      if (this.timerInterval) clearInterval(this.timerInterval);
-      this.stateManager.resetCurrentGame();
-      this.startGame();
-      return;
-    }
-
-    if (action === 'CHANGE_LANG') {
-      const langs: ('EN' | 'PL' | 'DE')[] = ['EN', 'PL', 'DE'];
-      const nextIndex = (langs.indexOf(currentState.lang) + 1) % langs.length;
-      this.stateManager.updateState({ lang: langs[nextIndex] });
-      this.uiController.render(this.stateManager.getState());
-      return;
-    }
-
-    if (action === 'START_GAME') {
-      this.startGame();
-      return;
-    }
-
-    // --- ANTI-CHEAT: Pomijanie poziomu daje 0 punktów oraz aktualizuje bestLevel ---
-    if (action === 'DEV_NEXT_LEVEL' && currentState.status === 'PLAYING') {
-      const s = this.stateManager.getState();
-      if (this.timerInterval) clearInterval(this.timerInterval);
-      
-      const nextLvl = s.level + 1;
-      this.stateManager.updateState({
-        status: 'WIN',
-        score: s.score,
-        level: nextLvl,
-        bestLevel: Math.max(s.bestLevel || 1, nextLvl)
-      });
-      this.uiController.render(this.stateManager.getState());
-      return;
-    }
-
-    if (action === 'DEV_RESET_BEST') {
-      // 1. Zatrzymujemy stary timer
-      if (this.timerInterval) clearInterval(this.timerInterval);
-
-      // 2. Wywołujemy fabryczny reset stanu (statystyki, życia, poziomy, czas idą na 0/1)
-      this.stateManager.factoryReset();
-
-      // 3. Resetujemy i przywracamy dymek instalacyjny przez globalny mostek
-      if (typeof window !== 'undefined' && window.__zipResetBanner) {
-        window.__zipResetBanner();
-      }
-
-      // 4. Inicjalizujemy nową, świeżą planszę dla poziomu 1
-      this.startGame();
-      return;
-    }
-
-    // --- ZAPIS TAKTYCZNY ---
-    if (action === 'TACTICAL_SAVE' && currentState.status === 'PLAYING' && currentState.savesLeft > 0) {
-      const snapshot = JSON.stringify({
-        path: [...currentState.path],
-        time: currentState.time,
-        totalTime: currentState.totalTime, // Bezpieczny zapis całkowitego czasu
-        puzzle: [...currentState.puzzle],
-        level: currentState.level,
-        savesLeft: currentState.savesLeft,
-        loadsLeft: currentState.loadsLeft
-      });
-      this.stateManager.updateState({ savedSnapshot: snapshot, savesLeft: currentState.savesLeft - 1 });
-      this.uiController.render(this.stateManager.getState());
-      return;
-    }
-
-    // --- ODCZYT TAKTYCZNY ---
-    if (action === 'TACTICAL_LOAD' && currentState.status === 'PLAYING' && currentState.loadsLeft > 0 && currentState.savedSnapshot) {
-      try {
-        const parsed = JSON.parse(currentState.savedSnapshot);
-        this.stateManager.updateState({
-          path: parsed.path,
-          time: parsed.time,
-          totalTime: parsed.totalTime ?? currentState.totalTime, // Przywrócenie całkowitego czasu
-          puzzle: parsed.puzzle,
-          level: parsed.level,
-          savesLeft: parsed.savesLeft ?? currentState.savesLeft,
-          loadsLeft: currentState.loadsLeft - 1
-        });
-        this.uiController.render(this.stateManager.getState());
-      } catch (e) {
-        console.error("Tactical Load Error:", e);
-      }
-      return;
-    }
-
-    // --- SURVIVAL: RESET ZABIERA ŻYCIE ---
-    if (action === 'RESET_PATH' && currentState.status === 'PLAYING') {
-      const remainingLives = currentState.lives - 1;
-      if (remainingLives <= 0) {
-        if (this.timerInterval) clearInterval(this.timerInterval);
-        this.stateManager.updateState({ status: 'GAME_OVER', lives: 0 });
-      } else {
-        // Resetujemy TYLKO czas poziomu (time: 0), całkowity czas gry biegnie dalej niezłomnie!
-        this.stateManager.updateState({ path: [], lives: remainingLives, time: 0 });
-        this.startTimer();
-      }
-      this.uiController.render(this.stateManager.getState());
-      return;
-    }
-
-    if (action.startsWith('CELL_CLICK:') && currentState.status === 'PLAYING') {
-      const cellId = parseInt(action.split(':')[1], 10);
-      this.processMove(cellId);
-    }
-  }
-
+  
   private startTimer(): void {
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.timerInterval = setInterval(() => {
@@ -414,5 +296,201 @@ export class GameEngine {
     if (c > 0) n.push(index - 1);
     if (c < cols - 1) n.push(index + 1);
     return n;
+  }
+
+  // --- FUNKCJA HASHUJĄCA DLA KODU KONTROLNEGO ---
+  // --- ZABEZPIECZONY TOKEN DWUKIERUNKOWY ---
+  private generateControlCode(score: number, level: number, totalTime: number): string {
+    const salt = "ZIP_COMP_SEC_v1_PATCHES_STYLE";
+    const payload = `${score}|${level}|${totalTime}`;
+    
+    let hash = 0;
+    const toHash = payload + "|" + salt;
+    for (let i = 0; i < toHash.length; i++) {
+      hash = ((hash << 5) - hash) + toHash.charCodeAt(i);
+      hash |= 0; 
+    }
+    const signature = Math.abs(hash).toString(16);
+    // Zwracamy zakodowany ciąg znaków, który wygląda profesjonalnie (np. Base64)
+    return btoa(`${payload}|${signature}`);
+  }
+
+  private decodeControlCode(code: string): { score: number, level: number, time: number } | null {
+    try {
+      const decoded = atob(code);
+      const parts = decoded.split('|');
+      if (parts.length !== 4) return null;
+      
+      const score = parseInt(parts[0], 10);
+      const level = parseInt(parts[1], 10);
+      const time = parseInt(parts[2], 10);
+      const signature = parts[3];
+
+      // Weryfikacja autentyczności (Anti-cheat)
+      const salt = "ZIP_COMP_SEC_v1_PATCHES_STYLE";
+      const payload = `${score}|${level}|${time}`;
+      let hash = 0;
+      const toHash = payload + "|" + salt;
+      for (let i = 0; i < toHash.length; i++) {
+        hash = ((hash << 5) - hash) + toHash.charCodeAt(i);
+        hash |= 0;
+      }
+      const expectedSignature = Math.abs(hash).toString(16);
+
+      if (signature === expectedSignature) {
+        return { score, level, time };
+      }
+    } catch (e) {
+      return null;
+    }
+    return null;
+  }
+
+   private handleUIAction(action: string): void {
+    const currentState = this.stateManager.getState();
+
+    if (action === 'COMPETE_MODE') {
+      const lang = currentState.lang;
+      
+      const textConfirmRemove = {
+        PL: "Masz już aktywnego rywala. Czy chcesz go usunąć?",
+        EN: "You already have an active rival. Do you want to remove them?",
+        DE: "Du hast bereits einen aktiven Rivalen. Möchtest du ihn entfernen?"
+      };
+      
+      const textPromptCode = {
+        PL: "Wklej kod rywala:",
+        EN: "Paste the rival's code:",
+        DE: "Füge den Code des Rivalen ein:"
+      };
+      
+      const textSuccess = {
+        PL: "Kod poprawny! Twój cel to pobicie rywala:",
+        EN: "Code accepted! Your goal is to beat the rival:",
+        DE: "Code akzeptiert! Dein Ziel ist es, den Rivalen zu schlagen:"
+      };
+
+      const textError = {
+        PL: "Nieprawidłowy kod lub próba oszustwa!",
+        EN: "Invalid code or cheat detected!",
+        DE: "Ungültiger Code oder Betrug erkannt!"
+      };
+
+      // Jeśli rywal już istnieje, pytamy o jego usunięcie
+      if (currentState.rivalTarget) {
+        if (confirm(textConfirmRemove[lang])) {
+          this.stateManager.updateState({ rivalTarget: null });
+          this.uiController.render(this.stateManager.getState());
+        }
+        return;
+      }
+
+      // Jeśli nie ma rywala, prosimy o kod
+      const code = prompt(textPromptCode[lang]);
+      if (code) {
+        const rivalData = this.decodeControlCode(code);
+        if (rivalData) {
+          alert(`${textSuccess[lang]} ${rivalData.score} pkt.`);
+          this.stateManager.updateState({ rivalTarget: rivalData });
+          this.uiController.render(this.stateManager.getState());
+        } else {
+          alert(textError[lang]);
+        }
+      }
+      return;
+    }
+
+    if (action === 'TOGGLE_DARK_MODE') {
+      this.stateManager.updateState({ isDarkMode: !currentState.isDarkMode });
+      this.uiController.render(this.stateManager.getState());
+      return;
+    }
+
+    if (action === 'NEW_GAME') {
+      if (this.timerInterval) clearInterval(this.timerInterval);
+      this.stateManager.resetCurrentGame();
+      this.startGame();
+      return;
+    }
+
+    if (action === 'CHANGE_LANG') {
+      const langs: ('EN' | 'PL' | 'DE')[] = ['EN', 'PL', 'DE'];
+      const nextIndex = (langs.indexOf(currentState.lang) + 1) % langs.length;
+      this.stateManager.updateState({ lang: langs[nextIndex] });
+      this.uiController.render(this.stateManager.getState());
+      return;
+    }
+
+    if (action === 'START_GAME') {
+      this.startGame();
+      return;
+    }
+
+    // --- ZAPIS TAKTYCZNY ---
+    if (action === 'TACTICAL_SAVE' && currentState.status === 'PLAYING' && currentState.savesLeft > 0) {
+      const snapshot = JSON.stringify({
+        path: [...currentState.path],
+        time: currentState.time,
+        totalTime: currentState.totalTime,
+        puzzle: [...currentState.puzzle],
+        level: currentState.level,
+        savesLeft: currentState.savesLeft,
+        loadsLeft: currentState.loadsLeft
+      });
+      this.stateManager.updateState({ savedSnapshot: snapshot, savesLeft: currentState.savesLeft - 1 });
+      this.uiController.render(this.stateManager.getState());
+      return;
+    }
+
+    // --- ODCZYT TAKTYCZNY ---
+    if (action === 'TACTICAL_LOAD' && currentState.status === 'PLAYING' && currentState.loadsLeft > 0 && currentState.savedSnapshot) {
+      try {
+        const parsed = JSON.parse(currentState.savedSnapshot);
+        this.stateManager.updateState({
+          path: parsed.path,
+          time: parsed.time,
+          totalTime: parsed.totalTime ?? currentState.totalTime,
+          puzzle: parsed.puzzle,
+          level: parsed.level,
+          savesLeft: parsed.savesLeft ?? currentState.savesLeft,
+          loadsLeft: currentState.loadsLeft - 1
+        });
+        this.uiController.render(this.stateManager.getState());
+      } catch (e) {
+        console.error("Tactical Load Error:", e);
+      }
+      return;
+    }
+
+    // --- SURVIVAL: RESET ZABIERA ŻYCIE I GENERUJE KOD PO ŚMIERCI ---
+    if (action === 'RESET_PATH' && currentState.status === 'PLAYING') {
+      const remainingLives = currentState.lives - 1;
+      if (remainingLives <= 0) {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        
+        // Generujemy kod kontrolny na podstawie wyników
+        const code = this.generateControlCode(
+          currentState.score, 
+          currentState.level, 
+          currentState.totalTime
+        );
+        
+        this.stateManager.updateState({ 
+          status: 'GAME_OVER', 
+          lives: 0,
+          controlCode: code // Zapisujemy kod w stanie
+        });
+      } else {
+        this.stateManager.updateState({ path: [], lives: remainingLives, time: 0 });
+        this.startTimer();
+      }
+      this.uiController.render(this.stateManager.getState());
+      return;
+    }
+
+    if (action.startsWith('CELL_CLICK:') && currentState.status === 'PLAYING') {
+      const cellId = parseInt(action.split(':')[1], 10);
+      this.processMove(cellId);
+    }
   }
 }

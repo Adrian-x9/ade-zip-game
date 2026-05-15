@@ -2,16 +2,14 @@ import { GameState } from '../types';
 
 export class StateManager {
   // KLUCZ PAMIĘCI: Bezobsługowy reset u wszystkich dotychczasowych graczy
-  private readonly STORAGE_KEY = 'zip_game_save_v1_1';
+  private readonly STORAGE_KEY = 'zip_game_save_v1_2';
   private state: GameState;
 
   constructor() {
     this.state = this.loadState();
   }
 
-  private getDefaultState(): GameState {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
+  private getDefaultState(): GameState {  
     let defaultLang: 'EN' | 'PL' | 'DE' = 'EN';
     if (typeof navigator !== 'undefined' && navigator.language) {
       const browserLang = navigator.language.toLowerCase();
@@ -34,7 +32,9 @@ export class StateManager {
       loadsLeft: 3,
       savedSnapshot: null,
       lang: defaultLang,
-      isDarkMode: prefersDark
+      isDarkMode: true,
+      rivalTarget: null,
+      controlCode: null
     };
   }
 
@@ -100,7 +100,8 @@ export class StateManager {
       loadsLeft: 3,
       savedSnapshot: null,
       time: 0,
-      totalTime: 0 // Reset całkowitego czasu przy uruchomieniu nowej gry
+      totalTime: 0, // Reset całkowitego czasu przy uruchomieniu nowej gry
+      controlCode: null
     });
   }
 

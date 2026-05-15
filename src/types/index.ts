@@ -9,13 +9,14 @@ export interface GameState {
   status: GameStatus;
   puzzle: number[];
   path: number[];
-  time: number;       // Czas bieżącego poziomu w sekundach
-  totalTime: number;  // NOWE: Całkowity czas gry w bieżącej sesji w sekundach
-  // --- NOWA EKONOMIA SURVIVALOWA ---
-  lives: number;      // Liczba żyć (domyślnie 3)
-  savesLeft: number;  // Gwiazdki zapisu (domyślnie 3)
-  loadsLeft: number;  // Gwiazdki odczytu (domyślnie 3)
-  savedSnapshot: string | null; // Zakodowany zrzut planszy w pamięci
+  time: number;
+  totalTime: number;
+  lives: number;
+  savesLeft: number;
+  loadsLeft: number;
+  savedSnapshot: string | null;
   lang: Language;
   isDarkMode: boolean;
+  controlCode: string | null;
+  rivalTarget: { score: number, level: number } | null; // NOWE: Przechowuje wynik rywala
 }

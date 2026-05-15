@@ -20,7 +20,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     light: "Light",
     infoTitle: "Instructions",
     inst: "Connect all available grid cells in a continuous path from 1 to the highest number, filling the entire board.",
-    generating: "Building level…"
+    generating: "Building level…",
+    compete: "🏆 Compete",
+    rivalActive: "🏆 Rival (Active)"
   },
   PL: {
     save: "Zapisz",
@@ -41,7 +43,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     light: "Jasny",
     infoTitle: "Instrukcja",
     inst: "Połącz wszystkie kafelki w ciągłą ścieżkę od 1 do najwyższego numeru, wypełniając przy tym całą planszę.",
-    generating: "Generuję poziom…"
+    generating: "Generuję poziom…",
+    compete: "🏆 Rywalizuj",
+    rivalActive: "🏆 Rywal (Aktywny)"
   },
   DE: {
     save: "Speichern",
@@ -62,7 +66,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     light: "Hell",
     infoTitle: "Anleitung",
     inst: "Verbinden Sie alle verfügbaren Felder in einem durchgehenden Pfad von 1 bis zur höchsten Nummer und füllen Sie dabei das gesamte Spielfeld aus.",
-    generating: "Level wird erstellt…"
+    generating: "Level wird erstellt…",
+    compete: "🏆 Antreten",
+    rivalActive: "🏆 Rivale (Aktiv)"
   }
 };
 
@@ -83,9 +89,9 @@ export class UIController {
   public init(): void {
     this.appContainer.innerHTML = `
       <div class="game-wrapper" translate="no">
-        <nav class="top-nav-row">
+       <nav class="top-nav-row">
           <button id="btn-new" class="btn-micro"></button>
-          <button id="btn-lang" class="btn-micro"></button>
+          <button id="btn-compete" class="btn-micro">🏆 Rywalizuj</button> <button id="btn-lang" class="btn-micro"></button>
           <button id="btn-dark" class="btn-micro"></button>
         </nav>
         <nav class="top-nav-row">
@@ -128,6 +134,15 @@ export class UIController {
             <button id="btn-close-info" class="btn-close">OK</button>
           </div>
         </div>
+
+        <div id="control-code-wrapper" class="control-code-wrapper hidden">
+          <div class="code-info">Twój kod rywalizacyjny:</div>
+          <div class="code-box">
+            <span id="control-code-val"></span>
+            <button id="btn-copy-code" class="btn-micro">Kopiuj</button>
+          </div>
+        </div>
+
       </div>
     `;
 
@@ -171,6 +186,7 @@ export class UIController {
     trigger('btn-load', 'TACTICAL_LOAD');
     trigger('btn-new', 'NEW_GAME');
     trigger('btn-lang', 'CHANGE_LANG');
+    trigger('btn-compete', 'COMPETE_MODE');
 
     document.getElementById('btn-dark')?.addEventListener('click', () => {
       if (this.onAction) this.onAction('TOGGLE_DARK_MODE');
@@ -193,31 +209,20 @@ export class UIController {
       }
     });
 
-    let scoreTaps = 0;
-    let scoreTapTimer: ReturnType<typeof setTimeout> | null = null;
-    document.getElementById('score-display-wrapper')?.addEventListener('click', () => {
-      scoreTaps++;
-      if (scoreTaps === 2) {
-        scoreTaps = 0;
-        if (scoreTapTimer) clearTimeout(scoreTapTimer);
-        if (this.onAction) this.onAction('DEV_NEXT_LEVEL');
-      } else {
-        if (scoreTapTimer) clearTimeout(scoreTapTimer);
-        scoreTapTimer = setTimeout(() => { scoreTaps = 0; }, 400);
-      }
-    });
-
-    let livesTaps = 0;
-    let livesTapTimer: ReturnType<typeof setTimeout> | null = null;
-    document.getElementById('lives-display-wrapper')?.addEventListener('click', () => {
-      livesTaps++;
-      if (livesTaps === 2) {
-        livesTaps = 0;
-        if (livesTapTimer) clearTimeout(livesTapTimer);
-        if (this.onAction) this.onAction('DEV_RESET_BEST');
-      } else {
-        if (livesTapTimer) clearTimeout(livesTapTimer);
-        livesTapTimer = setTimeout(() => { livesTaps = 0; }, 400);
+    document.getElementById('btn-copy-code')?.addEventListener('click', async () => {
+      const codeVal = document.getElementById('control-code-val')?.textContent;
+      if (codeVal && navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(codeVal);
+          const btn = document.getElementById('btn-copy-code');
+          if (btn) {
+            const originalText = btn.textContent;
+            btn.textContent = "Skopiowano!";
+            setTimeout(() => { btn.textContent = originalText; }, 2000);
+          }
+        } catch (err) {
+          console.error('Błąd kopiowania do schowka: ', err);
+        }
       }
     });
 
@@ -268,7 +273,7 @@ export class UIController {
         ],
         btnInstall: "Zainstaluj Aplikację",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.2.1 © 2026-05-12"
+        version: "v1.3.0 © 2026-05-15"
       },
       EN: {
         title: "How to play ZIP?",
@@ -280,7 +285,7 @@ export class UIController {
         ],
         btnInstall: "Install Application",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.2.1 © 2026-05-12"
+        version: "v1.3.0 © 2026-05-15"
       },
       DE: {
         title: "Wie man ZIP spielt?",
@@ -292,7 +297,7 @@ export class UIController {
         ],
         btnInstall: "App installieren",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.2.1 © 12.05.2026"
+        version: "v1.3.0 © 15.05.2026"
       }
     };
 
@@ -326,11 +331,17 @@ export class UIController {
 
     const t = TRANSLATIONS[state.lang];
 
-    if (state.isDarkMode) document.body.classList.add('dark-mode');
-    else document.body.classList.remove('dark-mode');
+    if (!state.isDarkMode) {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+    }
 
     const darkBtn = document.getElementById('btn-dark');
-    if (darkBtn) darkBtn.textContent = state.isDarkMode ? `☀️ ${t.light}` : `🌙 ${t.dark}`;
+    if (darkBtn) {
+      // Jeśli JESTEŚMY w Dark (true), przycisk ma oferować przejście na Light
+      darkBtn.textContent = state.isDarkMode ? `☀️ ${t.light}` : `🌙 ${t.dark}`;
+    }
 
     const setTxt = (id: string, text: string) => {
       const el = document.getElementById(id);
@@ -341,19 +352,31 @@ export class UIController {
     setTxt('lbl-time', t.time);
     setTxt('lbl-total-time', t.totalTime); // Wstrzyknięcie nowej etykiety
     setTxt('lbl-best', t.best);
+    setTxt('best-val', state.bestScore.toString());
     setTxt('lbl-max-lvl', t.maxLvl);
     setTxt('btn-new', t.new);
     setTxt('btn-info', `ℹ️ ${t.info}`);
     setTxt('btn-lang', `🌐 ${state.lang}`);
+
+    const btnCompete = document.getElementById('btn-compete');
+    if (btnCompete) {
+      btnCompete.textContent = state.rivalTarget ? t.rivalActive : t.compete;
+      btnCompete.style.color = state.rivalTarget ? 'var(--cell-active)' : 'var(--text-muted)';
+    }
+
+   // Zaktualizowane ustawianie tekstów z uwzględnieniem rywala
+    const bestText = state.rivalTarget ? `${state.bestScore} / ${state.rivalTarget.score}` : state.bestScore.toString();
+    const maxLvlText = state.rivalTarget ? `${state.bestLevel || 1} / ${state.rivalTarget.level}` : (state.bestLevel || 1).toString();
+
+    setTxt('best-val', bestText);
+    setTxt('max-lvl-val', maxLvlText);
 
     const dynamicInfoEl = document.getElementById('dynamic-info-wrapper');
     if (dynamicInfoEl) {
       dynamicInfoEl.innerHTML = this.renderInfoContent(state.lang);
     }
 
-    if (this.scoreElement) this.scoreElement.textContent = state.score.toString();
-    setTxt('best-val', state.bestScore.toString());
-    setTxt('max-lvl-val', (state.bestLevel || 1).toString()); 
+    if (this.scoreElement) this.scoreElement.textContent = state.score.toString(); 
     setTxt('timer-val', `${state.time} s`);
     setTxt('total-timer-val', `${state.totalTime || 0} s`); // Wstrzyknięcie wartości całkowitego czasu
 
@@ -450,6 +473,16 @@ export class UIController {
     if (resetBtn) {
       resetBtn.textContent = t.reset;
       resetBtn.disabled = state.status !== 'PLAYING';
+    }
+    
+    const codeWrapper = document.getElementById('control-code-wrapper');
+    const codeVal = document.getElementById('control-code-val');
+    
+    if (state.status === 'GAME_OVER' && state.controlCode) {
+      if (codeVal) codeVal.textContent = state.controlCode;
+      if (codeWrapper) codeWrapper.classList.remove('hidden');
+    } else {
+      if (codeWrapper) codeWrapper.classList.add('hidden');
     }
   }
 }

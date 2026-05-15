@@ -1,5 +1,5 @@
 {
-  "name": "ZIP Game",
+  "name": "ade ZIP Game",
   "short_name": "ZIP",
   "description": "Connect all available grid cells in a continuous path from 1 to the highest number.",
   "start_url": "./",
