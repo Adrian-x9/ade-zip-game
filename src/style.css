@@ -92,13 +92,14 @@ body {
 .stats-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  padding-left: 4px;
 }
 
 .stat-item {
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem; /* Etykiety mniejsze i subtelne */
 }
 
 .stat-item span {
@@ -109,6 +110,11 @@ body {
 
 .stat-item.justify-right {
   justify-content: flex-end;
+}
+
+.stat-item span:last-child {
+  font-size: 1.1rem;   /* Wartości (liczby) większe i wyraźne */
+  font-weight: 800;
 }
 
 .score-display {
@@ -292,8 +298,9 @@ body {
 /* Wyraźna etykieta poziomu podczas gry */
 #btn-start:disabled {
   opacity: 1;
-  background-color: var(--cell-empty);
+  background-color: var(--cell-checkpoint); /* Kolor tła checkpointu */
   color: var(--text-main);
+  border: 1px solid var(--cell-active);    /* Delikatna niebieska ramka */
   cursor: default;
 }
 
@@ -545,17 +552,19 @@ body.light-mode {
   justify-content: space-between;
   align-items: center;
   background-color: var(--bg-color);
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 8px;
-  gap: 12px;
+  gap: 8px;
 }
 
 #control-code-val {
   font-family: monospace;
-  font-size: 1.1rem;
+  font-size: 0.85rem; /* Nieco mniejszy dla długich ciągów Base64 */
   font-weight: 800;
   color: var(--cell-active);
-  letter-spacing: 1px;
+  word-break: break-all; /* Wymusza zawijanie długiego kodu */
+  max-width: 200px;      /* Zapobiega wypychaniu przycisku Kopiuj */
+  text-align: left;
 }
 
 #btn-copy-code {

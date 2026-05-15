@@ -8,7 +8,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     new: "New Game",
     lives: "LIVES",
     time: "TIME",
-    totalTime: "TOTAL TIME", // NOWE
+    totalTime: "TOTAL TIME",
     best: "BEST",
     maxLvl: "MAX LVL",
     start: "Start Game",
@@ -54,7 +54,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     new: "Neues Spiel",
     lives: "LEBEN",
     time: "ZEIT",
-    totalTime: "GESAMTZEIT", // NOWE
+    totalTime: "GESAMT",
     best: "REKORD",
     maxLvl: "MAX LVL",
     start: "Starten",
@@ -273,7 +273,7 @@ export class UIController {
         ],
         btnInstall: "Zainstaluj Aplikację",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.3.0 © 2026-05-15"
+        version: "v1.3.1 © 2026-05-15"
       },
       EN: {
         title: "How to play ZIP?",
@@ -285,7 +285,7 @@ export class UIController {
         ],
         btnInstall: "Install Application",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.3.0 © 2026-05-15"
+        version: "v1.3.1 © 2026-05-15"
       },
       DE: {
         title: "Wie man ZIP spielt?",
@@ -297,7 +297,7 @@ export class UIController {
         ],
         btnInstall: "App installieren",
         author: "ade ZIP game by Adrian Ulbrych",
-        version: "v1.3.0 © 15.05.2026"
+        version: "v1.3.1 © 15.05.2026"
       }
     };
 
